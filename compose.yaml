@@ -1,0 +1,46 @@
+name: switchgear
+services:
+  switchgear:
+    build:
+      context: .
+      target: default
+    image: ${SWITCHGEAR_IMAGE:-ghcr.io/your-owner/switchgear:0.1.0}
+    ports:
+      - "127.0.0.1:${SWITCHGEAR_PORT:-8080}:8080"
+    env_file: ${SWITCHGEAR_ENV_FILE:-.env}
+    environment:
+      SWITCHGEAR_STATE_DIR: /data
+      SWITCHGEAR_STORAGE_BACKEND: sqlite
+      SWITCHGEAR_PUBLIC_BASE_URL: http://localhost:${SWITCHGEAR_PORT:-8080}
+      SWITCHGEAR_COOKIE_SECURE: "false"
+    volumes:
+      - switchgear-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 15s
+
+  switchgear-browser:
+    profiles: ["browser"]
+    build:
+      context: .
+      target: browser
+    image: ${SWITCHGEAR_BROWSER_IMAGE:-ghcr.io/your-owner/switchgear:0.1.0-browser}
+    ports:
+      - "127.0.0.1:${SWITCHGEAR_PORT:-8080}:8080"
+    env_file: ${SWITCHGEAR_ENV_FILE:-.env}
+    environment:
+      SWITCHGEAR_STATE_DIR: /data
+      SWITCHGEAR_STORAGE_BACKEND: sqlite
+      SWITCHGEAR_PDF_BACKEND: chromium
+      SWITCHGEAR_PUBLIC_BASE_URL: http://localhost:${SWITCHGEAR_PORT:-8080}
+      SWITCHGEAR_COOKIE_SECURE: "false"
+    volumes:
+      - switchgear-data:/data
+    restart: unless-stopped
+
+volumes:
+  switchgear-data:

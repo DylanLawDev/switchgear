@@ -1,0 +1,52 @@
+/* px literals below are structural geometry (grid min column width, chip vertical padding, meta letter-spacing) — no token equivalent; interpretation logged in PR body */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-3);
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.name {
+  font: 500 var(--text-md) var(--mono);
+  color: var(--text);
+}
+
+.meta {
+  font: 400 var(--text-xs) var(--mono);
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+
+.desc {
+  margin: var(--space-2) 0 var(--space-3);
+  color: var(--text-dim);
+}
+
+.schedule {
+  display: inline-block;
+  font: 400 var(--text-sm) var(--mono);
+  color: var(--text-dim);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 1px var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-2);
+}
+.editor { margin-top: var(--space-5); padding: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-lg); }
+.editor textarea { min-height: 360px; }

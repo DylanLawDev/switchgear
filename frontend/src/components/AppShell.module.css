@@ -1,0 +1,223 @@
+/* px literals below are structural geometry (rail widths, nav gap, wire dot diameter, label max-width, rail-button padding) — no token equivalent; interpretation logged in PR body */
+
+.shell {
+  display: flex;
+  height: 100vh;
+}
+
+.rail {
+  position: relative;
+  width: 56px;
+  height: 100%;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  overflow: hidden;
+  transition: width var(--dur) var(--ease);
+}
+.rail:hover,
+.rail:focus-within,
+.railPinned {
+  width: 230px;
+}
+
+.wordmark {
+  display: block;
+  font: 500 var(--text-lg) var(--mono);
+  color: var(--text);
+  text-decoration: none;
+  white-space: nowrap;
+  padding: var(--space-3) var(--space-4);
+}
+.wordmark:hover { color: var(--text); }
+
+.wordmarkMin { display: inline; }
+.wordmarkFull { display: none; }
+.rail:hover .wordmarkMin,
+.rail:focus-within .wordmarkMin,
+.railPinned .wordmarkMin { display: none; }
+.rail:hover .wordmarkFull,
+.rail:focus-within .wordmarkFull,
+.railPinned .wordmarkFull { display: inline; }
+
+.caret {
+  color: var(--signal);
+  animation: caret-blink 1.4s steps(1) infinite;
+}
+@keyframes caret-blink { 50% { opacity: 0; } }
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 var(--space-2) 100px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font: 500 var(--text-sm) var(--mono);
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  transition: color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+.item:hover { color: var(--text); background: var(--well); }
+.itemActive { color: var(--signal); background: var(--well); }
+
+.prefix {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+  color: var(--signal);
+}
+
+.code {
+  display: inline-block;
+  width: 2ch;
+  flex-shrink: 0;
+}
+
+.separator { color: var(--signal); }
+
+.label {
+  opacity: 0;
+  max-width: 0;
+  overflow: hidden;
+  transition: opacity var(--dur) var(--ease);
+}
+.rail:hover .label,
+.rail:focus-within .label,
+.railPinned .label {
+  opacity: 1;
+  max-width: 160px;
+}
+
+.railFoot {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: var(--space-3) var(--space-2);
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.railControls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.wire {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font: 400 var(--text-xs) var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  color: transparent;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: color var(--dur) var(--ease);
+}
+.wire::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ok);
+  flex-shrink: 0;
+}
+.rail:hover .wire,
+.rail:focus-within .wire,
+.railPinned .wire {
+  color: var(--text-dim);
+}
+
+.railBtn {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  font: 500 var(--text-md) var(--mono);
+  color: var(--text-dim);
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0;
+  cursor: pointer;
+  align-self: flex-start;
+}
+.railBtn:hover { color: var(--signal); border-color: var(--signal); }
+.railBtnActive { color: var(--signal); border-color: var(--signal); background: var(--well); }
+
+.main {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  overflow-y: auto;
+  padding: var(--space-5);
+}
+
+@media (max-width: 700px) {
+  .shell {
+    flex-direction: column;
+  }
+  .rail {
+    position: static;
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-4);
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    overflow-x: auto;
+    transition: none;
+  }
+  .rail:hover,
+  .rail:focus-within,
+  .railPinned {
+    width: 100%;
+  }
+  .wordmarkMin { display: none; }
+  .wordmarkFull { display: inline; }
+  .nav {
+    flex-direction: row;
+    padding: 0;
+  }
+  .code { display: none; }
+  .label {
+    opacity: 1;
+    max-width: none;
+  }
+  .railFoot {
+    position: static;
+    margin-top: 0;
+    margin-left: auto;
+    flex-direction: row;
+    align-items: center;
+    border-top: none;
+    padding: 0;
+  }
+  .railControls {
+    flex-direction: row;
+    align-items: center;
+  }
+  .wire { color: var(--text-dim); }
+  .collapseBtn { display: none; }
+}

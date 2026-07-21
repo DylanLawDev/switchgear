@@ -1,0 +1,36 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.fieldLabel {
+  font: 400 var(--text-xs) var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.input {
+  background: var(--well);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: var(--space-2);
+  font: 400 var(--text-base) var(--mono);
+}
+.hint { color: var(--warn); font: 400 var(--text-xs) var(--mono); }
+.actions { display: flex; justify-content: flex-end; }
+.skeletonPreview {
+  background: var(--well);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  padding: var(--space-2);
+  margin: 0;
+  font: 400 var(--text-sm) var(--mono);
+  white-space: pre-wrap;
+}

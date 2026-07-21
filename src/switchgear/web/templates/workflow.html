@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>switchgear &middot; {{ wf_name }}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="page-workflow">
+  {% include "_header.html" %}
+  <main class="page">
+    <p class="wf-desc">{{ wf_description }}</p>
+    <div id="wf-root"></div>
+  </main>
+  <script type="application/json" id="wf-def">{{ definition_json | safe }}</script>
+  <script src="/static/workflow.js" defer></script>
+</body>
+</html>

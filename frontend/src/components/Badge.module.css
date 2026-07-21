@@ -1,0 +1,13 @@
+/* px literals below are structural geometry (widths/glyph metrics/shadows) — no token equivalent; interpretation logged in PR body */
+.badge {
+  display: inline-block;
+  font: 400 var(--text-sm) var(--mono);
+  padding: 1px var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+}
+.dim { color: var(--text-dim); border-color: var(--line); }
+.signal { color: var(--signal); border-color: var(--signal); background: color-mix(in srgb, var(--signal) 18%, transparent); }
+.ok { color: var(--ok); border-color: var(--ok); }
+.warn { color: var(--warn); border-color: var(--warn); }

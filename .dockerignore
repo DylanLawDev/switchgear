@@ -1,0 +1,13 @@
+.venv/
+.git/
+.state/
+.state-e2e/
+.env
+__pycache__/
+.superpowers/
+docs/
+tests/
+frontend/node_modules/
+frontend/playwright-report/
+frontend/test-results/
+src/switchgear/web/static/app/

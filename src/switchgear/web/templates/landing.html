@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>switchgear</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="page-landing">
+  <main class="landing">
+    <h1 class="landing-wordmark">switchgear<span class="caret">&#9646;</span></h1>
+    <p class="landing-sub">a private agent &middot; owner sign-in only</p>
+    <form action="/auth/local" method="post">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <label for="password">Owner password</label>
+      <input id="password" name="password" type="password" required autocomplete="current-password">
+      <button class="landing-btn" type="submit">Sign in</button>
+    </form>
+    <footer class="landing-foot">private instance</footer>
+  </main>
+</body>
+</html>

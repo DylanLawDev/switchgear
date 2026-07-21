@@ -1,0 +1,58 @@
+/* px literals below are structural geometry (widths/glyph metrics/shadows) — no token equivalent; interpretation logged in PR body */
+.viewport {
+  position: fixed;
+  bottom: var(--space-5);
+  right: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: min(360px, calc(100vw - var(--space-6)));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  z-index: 100;
+  outline: none;
+}
+
+.toast {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--well) 60%, transparent);
+}
+.toast[data-state="open"] { animation: slide-in var(--dur) var(--ease); }
+.toast[data-state="closed"] { animation: slide-out var(--dur) var(--ease); }
+
+.error {
+  border-left: 2px solid var(--warn);
+}
+
+.message {
+  color: var(--text);
+  font: 400 var(--text-base) var(--mono);
+}
+
+.close {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-size: var(--text-lg);
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 var(--space-1);
+}
+.close:hover { color: var(--signal); }
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slide-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(8px); }
+}

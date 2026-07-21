@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>switchgear &middot; memories</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="page-memories">
+  {% include "_header.html" %}
+  <main class="page">
+    <h1>Memories</h1>
+    <section id="mem-create">
+      <h2>New memory</h2>
+      <form id="create-form">
+        <select id="create-type">
+          <option value="core">core</option>
+          <option value="episodic" selected>episodic</option>
+        </select>
+        <input id="create-importance" type="number" min="1" max="10" value="5">
+        <textarea id="create-text" rows="2" placeholder="Memory text"></textarea>
+        <button type="submit">Save</button>
+      </form>
+    </section>
+    <section id="mem-filters">
+      <label>Type
+        <select id="filter-type">
+          <option value="">all</option>
+          <option value="core">core</option>
+          <option value="episodic">episodic</option>
+        </select>
+      </label>
+      <label>Status
+        <select id="filter-status">
+          <option value="">all</option>
+          <option value="active" selected>active</option>
+          <option value="superseded">superseded</option>
+          <option value="archived">archived</option>
+        </select>
+      </label>
+    </section>
+    <ul id="memories"></ul>
+  </main>
+  <script src="/static/memories.js"></script>
+</body>
+</html>

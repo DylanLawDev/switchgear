@@ -1,0 +1,12 @@
+.control {
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--line);
+}
+.label {
+  display: block;
+  font: 400 var(--text-xs) var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: var(--space-2);
+}

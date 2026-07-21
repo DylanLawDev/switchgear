@@ -1,0 +1,27 @@
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.group {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.chip {
+  font: 400 var(--text-sm) var(--mono);
+  padding: 1px var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.chip:hover { color: var(--text); }
+
+.active {
+  color: var(--signal);
+  border-color: var(--signal);
+  background: color-mix(in srgb, var(--signal) 18%, transparent);
+}

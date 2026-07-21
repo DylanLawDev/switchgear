@@ -1,0 +1,70 @@
+.page {
+  width: min(920px, 100%);
+  margin: 0 auto;
+  padding-bottom: var(--space-7);
+}
+
+.intro {
+  color: var(--text-dim);
+  margin: calc(var(--space-2) * -1) 0 var(--space-5);
+}
+
+.section {
+  margin-top: var(--space-5);
+  padding: var(--space-5);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+
+.section h2 { margin-top: 0; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.field > span {
+  font: 500 var(--text-sm) var(--mono);
+  color: var(--text);
+}
+
+.field small {
+  min-height: 2.6em;
+  color: var(--text-dim);
+  line-height: 1.3;
+}
+
+.field input { width: 100%; }
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.success { color: var(--ok); font: 500 var(--text-sm) var(--mono); }
+.error { color: var(--warn); font: 500 var(--text-sm) var(--mono); }
+
+.account {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.accountMeta { color: var(--text-dim); }
+.accountMeta strong { display: block; color: var(--text); margin-bottom: var(--space-1); }
+
+@media (max-width: 700px) {
+  .grid { grid-template-columns: 1fr; }
+  .account { align-items: flex-start; flex-direction: column; }
+}

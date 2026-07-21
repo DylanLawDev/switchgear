@@ -1,0 +1,26 @@
+/* px literals below are structural geometry (left column width) — no token equivalent; interpretation logged in PR body */
+.page {
+  display: flex;
+  /* Fill main's content box, then bleed through its padding on every edge. */
+  height: calc(100% + var(--space-5) * 2);
+  margin: calc(var(--space-5) * -1);
+}
+.left {
+  width: 320px;
+  flex: 0 0 320px;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  overflow-y: auto;
+}
+.right {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 700px) {
+  .left { display: none; }
+}

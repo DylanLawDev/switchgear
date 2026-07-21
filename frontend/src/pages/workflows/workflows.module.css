@@ -1,0 +1,169 @@
+/* Structural literals below are parity values ported byte-for-byte from
+   src/switchgear/web/static/style.css's workflow-renderer rules (detail-grid column widths,
+   wf-desc measure, mini-list border) — no token equivalent; interpretation logged in PR body. */
+
+.page {
+  display: flex;
+  gap: var(--space-5);
+  align-items: flex-start;
+}
+
+.rail {
+  width: 240px;
+  flex: 0 0 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.railSelect { display: none; width: 100%; margin-bottom: var(--space-4); }
+
+.railItem {
+  display: block;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--text-dim);
+  text-decoration: none;
+}
+.railItem:hover { background: var(--well); color: var(--text); }
+.railItemActive { background: var(--well); color: var(--text); }
+
+.railName {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font: 500 var(--text-base) var(--mono);
+}
+
+.railDesc {
+  display: block;
+  font: 400 var(--text-sm) var(--sans);
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+.pendingBadge {
+  margin-left: auto;
+  display: inline-block;
+  font: 500 var(--text-xs) var(--mono);
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--signal);
+  color: var(--signal);
+  background: color-mix(in srgb, var(--signal) 18%, transparent);
+}
+
+.pane { flex: 1 1 auto; min-width: 0; }
+
+.wfDesc { color: var(--text-dim); margin: 0 0 var(--space-5); max-width: 60ch; }
+
+.kindSection { margin-bottom: var(--space-6); }
+
+.detail {
+  margin-top: var(--space-5);
+  border-top: 1px solid var(--line);
+  padding-top: var(--space-4);
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: minmax(8rem, max-content) 1fr;
+  gap: var(--space-2) var(--space-4);
+  margin: var(--space-4) 0;
+  align-items: baseline;
+  justify-items: start;
+}
+.detailGrid > label { color: var(--text-dim); font-size: var(--text-sm); }
+
+.raw { margin-top: var(--space-3); }
+.raw summary { color: var(--text-dim); cursor: pointer; font-size: var(--text-sm); }
+
+.btnRow {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: var(--space-4);
+}
+
+.detailError { color: var(--warn); font: 400 var(--text-sm) var(--mono); }
+
+.fieldEditor { margin: var(--space-4) 0; }
+
+.fieldRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+}
+.fieldRow > label:first-child {
+  flex: 0 0 260px;
+  font: 400 var(--text-xs) var(--mono);
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fieldRow input[type="text"],
+.fieldRow textarea {
+  flex: 1 1 auto;
+  background: var(--well);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  padding: var(--space-2) var(--space-3);
+  font: 400 var(--text-sm) var(--mono);
+}
+.fieldRow.multiline { align-items: flex-start; }
+.fieldRow.multiline textarea { resize: vertical; min-height: 160px; white-space: pre-wrap; }
+.rawManifest { min-height: 520px !important; }
+.error { color: var(--warn); }
+
+.miniList { margin-top: var(--space-5); }
+.miniList h4 { color: var(--text-dim); margin: 0 0 var(--space-1); text-transform: lowercase; }
+
+.miniRow {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--line);
+  padding: var(--space-2) var(--space-1);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+}
+.miniRow:hover { background: var(--well); }
+
+.chipRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-3) 0;
+}
+.chipRowLabel { color: var(--text-dim); font-size: var(--text-sm); }
+
+.intakeList { list-style: none; margin: var(--space-3) 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.intakeList li { display: flex; align-items: center; gap: var(--space-2); font: 400 var(--text-base) var(--mono); }
+
+.gateDiagram { color: var(--text-dim); font: 400 var(--text-sm) var(--mono); margin-top: var(--space-3); }
+
+.prereqPanel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--panel);
+  padding: var(--space-5);
+}
+.prereqIntro { margin: 0 0 var(--space-3); color: var(--text-dim); font: 400 var(--text-base) var(--mono); }
+.prereqList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.prereqRow { display: flex; align-items: center; gap: var(--space-2); font: 400 var(--text-base) var(--mono); color: var(--text); }
+.prereqRow a { color: var(--signal); }
+.prereqError { color: var(--warn); }
+
+@media (max-width: 700px) {
+  .page { flex-direction: column; }
+  .rail { display: none; }
+  .railSelect { display: block; }
+}

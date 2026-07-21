@@ -1,0 +1,14 @@
+/* px literals below are structural geometry (widths/glyph metrics/shadows) — no token equivalent; interpretation logged in PR body */
+.chip {
+  display: inline-block;
+  font: 400 var(--text-sm) var(--mono);
+  padding: 1px var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+.dim { color: var(--text-dim); }
+.ok { color: var(--ok); border-color: var(--ok); }
+.warn { color: var(--warn); border-color: var(--warn); }
+.signal { color: var(--signal); border-color: var(--signal); }

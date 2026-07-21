@@ -1,0 +1,23 @@
+.page { display: grid; grid-template-columns: minmax(220px, 280px) minmax(0, 1fr); min-height: 100%; }
+.rail { border-right: 1px solid var(--line); padding: var(--space-3); background: var(--well); }
+.railHead, .toolbar { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); }
+.railHead { justify-content: space-between; }
+.rail h1 { margin: 0; font-size: var(--text-lg); }
+.rail > button { display: flex; flex-direction: column; width: 100%; gap: var(--space-1); padding: var(--space-3); border: 0; border-left: 2px solid transparent; background: transparent; color: var(--text); text-align: left; cursor: pointer; }
+.rail > button small { color: var(--text-dim); }
+.rail > button.selected { border-left-color: var(--signal); background: var(--panel); }
+.content { min-width: 0; padding: var(--space-5); overflow: auto; }
+.content input, .content select { width: 100%; min-height: 34px; }
+.toolbar input { max-width: 280px; }
+.toolbar h2 { margin: 0 auto 0 0; }
+.hint { color: var(--text-dim); }
+.manifest { min-height: 430px !important; }
+.panel { margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--line); }
+.panel pre, .content > pre { padding: var(--space-3); overflow: auto; background: var(--well); }
+.formGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+.formGrid label, .content > div > label { display: flex; flex-direction: column; gap: var(--space-1); color: var(--text-dim); }
+.checks { display: flex; gap: var(--space-4); margin: var(--space-4) 0; }
+.checks label { display: flex; align-items: center; gap: var(--space-2); }
+.checks input { width: auto; min-height: auto; }
+.error { color: var(--warn); }
+@media (max-width: 700px) { .page { grid-template-columns: 1fr; }.rail { border-right: 0; border-bottom: 1px solid var(--line); }.formGrid { grid-template-columns: 1fr; } }

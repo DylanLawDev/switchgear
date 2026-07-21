@@ -1,0 +1,17 @@
+/* px literals below are structural geometry (widths/glyph metrics/shadows) — no token equivalent; interpretation logged in PR body */
+.signal {
+  display: inline-block;
+  font: 500 var(--text-sm) var(--mono);
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--signal) 18%, transparent);
+  color: var(--signal);
+}
+.low {
+  display: inline-block;
+  font: 500 var(--text-sm) var(--mono);
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+}
+.dim { color: var(--text-dim); }

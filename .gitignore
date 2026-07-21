@@ -1,0 +1,33 @@
+__pycache__/
+.venv/
+.state/
+.env
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+*.tfvars.json
+crash.log
+/terraform/.terraform.lock.hcl
+
+# Deploy orchestration — non-secret but project-specific; keep .example only
+tools/deploy.config
+
+# SPA build + tooling
+src/switchgear/web/static/app/
+frontend/node_modules/
+frontend/playwright-report/
+frontend/test-results/
+.state-e2e/
+
+# Persistent/runtime data and generated artifacts
+data/
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+artifacts/

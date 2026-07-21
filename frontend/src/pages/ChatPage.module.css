@@ -1,0 +1,123 @@
+/* px literals below are structural geometry (rail width, message max-width) — no token equivalent; interpretation logged in PR body */
+.page {
+  display: flex;
+  /* fills main's border box exactly: 100% resolves against main's content box (border-box
+     sizing), so add back the padding twice before the negative margin bleeds it flush. */
+  height: calc(100% + var(--space-5) * 2);
+  margin: calc(var(--space-5) * -1);
+}
+
+.rail {
+  width: 230px;
+  flex: 0 0 230px;
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  padding: var(--space-3) var(--space-2);
+  display: flex;
+  flex-direction: column;
+}
+
+.historyList { flex: 1 1 auto; overflow-y: auto; min-height: 0; }
+
+.railLink {
+  display: block;
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-1);
+  border-radius: var(--radius-md);
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: var(--text-base);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.railLink:hover { background: var(--ink); color: var(--text); }
+.railLinkActive { background: var(--ink); color: var(--text); }
+
+.newChat {
+  flex: 0 0 auto;
+  width: 100%;
+  min-height: 48px;
+  margin-top: var(--space-2);
+  color: var(--signal-ink);
+  background: var(--signal);
+  border: 1px solid var(--signal);
+  border-radius: var(--radius-md);
+  font: 600 var(--text-md) var(--sans);
+  cursor: pointer;
+}
+.newChat:hover { background: var(--signal-hover); border-color: var(--signal-hover); }
+
+.main {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.messages {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.msg {
+  max-width: 70%;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  white-space: pre-wrap;
+  line-height: 1.45;
+}
+.msgUser {
+  align-self: flex-end;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+.msgAssistant {
+  align-self: flex-start;
+  padding-left: 0;
+  white-space: normal;
+}
+.msgError {
+  align-self: flex-start;
+  border: 1px solid var(--warn);
+  color: var(--warn);
+  font: 400 var(--text-base) var(--mono);
+}
+
+.caret {
+  align-self: flex-start;
+  color: var(--signal);
+  animation: caret-blink 1.4s steps(1) infinite;
+}
+@keyframes caret-blink { 50% { opacity: 0; } }
+
+.composer {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border-top: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.input {
+  flex: 1 1 auto;
+  min-height: 96px;
+  max-height: 50%;
+  resize: none;
+  background: var(--well);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  color: var(--text);
+  padding: var(--space-3) var(--space-3);
+  font: inherit;
+}
+
+@media (max-width: 700px) {
+  .rail { display: none; }
+  .msg { max-width: 90%; }
+}

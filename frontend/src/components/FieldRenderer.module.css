@@ -1,0 +1,15 @@
+/* Structural literals below are parity values ported byte-for-byte from
+   src/switchgear/web/static/style.css's .wf-chip / img.shot rules — no token equivalent for the
+   thin outline-chip border-radius or image max-width; interpretation logged in PR body. */
+.chip {
+  display: inline-block;
+  padding: 1px var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  font: 400 var(--text-sm) var(--mono);
+}
+.shot {
+  max-width: 100%;
+  border: 1px solid var(--line);
+  margin-top: var(--space-2);
+}

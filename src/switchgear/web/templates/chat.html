@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>switchgear &middot; chat</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="page-chat">
+  {% include "_header.html" %}
+  <div class="layout">
+    <nav id="convs" aria-label="Conversations"></nav>
+    <main>
+      <div id="messages"></div>
+      <form id="composer">
+        <textarea id="input" placeholder="Message your agent..." rows="1"></textarea>
+        <button type="submit">Send</button>
+      </form>
+    </main>
+  </div>
+  <script src="/static/chat.js"></script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>switchgear &middot; resources</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="page-resources">
+  {% include "_header.html" %}
+  <main class="page">
+    <h1>Resources</h1>
+    <ul id="resources"></ul>
+    <section id="detail" hidden>
+      <h2 id="detail-title"></h2>
+      <p id="detail-meta"></p>
+      <textarea id="detail-content" rows="16"
+                style="width:100%;font-family:monospace"></textarea>
+      <div>
+        <button id="detail-save">Save</button>
+        <button id="detail-delete">Delete</button>
+      </div>
+      <p id="detail-error"></p>
+    </section>
+    <section id="create">
+      <h2>New resource</h2>
+      <input id="create-name" placeholder="name (lowercase-with-dashes)">
+      <select id="create-kind">
+        <option value="md">md</option>
+        <option value="txt">txt</option>
+        <option value="json">json</option>
+        <option value="csv">csv</option>
+      </select>
+      <input id="create-description" placeholder="description">
+      <textarea id="create-content" rows="8"
+                style="width:100%;font-family:monospace" placeholder="content"></textarea>
+      <button id="create-save">Create</button>
+      <p id="create-error"></p>
+    </section>
+  </main>
+  <script src="/static/resources.js"></script>
+</body>
+</html>

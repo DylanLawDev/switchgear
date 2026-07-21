@@ -1,0 +1,33 @@
+.md { line-height: 1.55; overflow-wrap: anywhere; }
+.md h1, .md h2, .md h3, .md h4, .md h5, .md h6 {
+  margin: var(--space-4) 0 var(--space-2);
+  font-family: var(--mono);
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+.md h1 { font-size: var(--text-xl); }
+.md h2 { font-size: var(--text-lg); }
+.md h3, .md h4, .md h5, .md h6 { font-size: var(--text-md); }
+.md p, .md ul, .md ol, .md blockquote { margin: var(--space-2) 0; }
+.md ul, .md ol { padding-left: var(--space-5); }
+.md code {
+  background: var(--well);
+  padding: 0 var(--space-1);
+  font-family: var(--mono);
+  font-size: var(--text-sm);
+}
+.md pre {
+  max-width: 100%;
+  padding: var(--space-3);
+  overflow: auto;
+  background: var(--well);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+.md pre code { padding: 0; background: transparent; }
+.md blockquote { padding-left: var(--space-3); border-left: 3px solid var(--line); color: var(--text-dim); }
+.md table { width: 100%; border-collapse: collapse; margin: var(--space-3) 0; }
+.md th, .md td { padding: var(--space-2); border: 1px solid var(--line); text-align: left; }
+.md a { color: var(--signal); }
+.mermaid { max-width: 100%; overflow-x: auto; padding: var(--space-3); background: var(--well); border-radius: var(--radius-md); }
+.mermaid svg { display: block; max-width: 100%; height: auto; margin: 0 auto; }

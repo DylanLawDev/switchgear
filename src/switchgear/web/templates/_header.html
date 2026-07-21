@@ -1,0 +1,15 @@
+<header class="shell-header">
+  <a class="wordmark" href="/">switchgear<span class="caret">&#9646;</span></a>
+  <nav class="tabs">
+    <a href="/" class="tab{% if active == 'chat' %} active{% endif %}" data-tab="chat">Chat</a>
+    <a href="/skills" class="tab{% if active == 'skills' %} active{% endif %}" data-tab="skills">Skills</a>
+    <a href="/resources" class="tab{% if active == 'resources' %} active{% endif %}" data-tab="resources">Resources</a>
+    <a href="/memories" class="tab{% if active == 'memories' %} active{% endif %}" data-tab="memories">Memories</a>
+    <a href="/channels/email" class="tab{% if active == 'channels' %} active{% endif %}" data-tab="channels">Channels</a>
+    {% for wf in workflows %}
+    <a href="/workflows/{{ wf.name }}" class="tab{% if active == 'wf:' ~ wf.name %} active{% endif %}" data-tab="wf:{{ wf.name }}">{{ wf.name | replace('-', ' ') }}{% if wf.stale %}<span class="stale-dot" title="intake stale" aria-label="intake stale"></span>{% endif %}</a>
+    {% endfor %}
+  </nav>
+  <div class="wire" id="wire"><span class="wire-dot" aria-hidden="true"></span><span id="wire-text">agent on duty</span></div>
+</header>
+<script src="/static/wire.js" defer></script>

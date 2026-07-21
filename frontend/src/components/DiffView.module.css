@@ -1,0 +1,25 @@
+/* literals below are structural geometry (max-height in px, gutter width in ch) — no token equivalent; interpretation logged in PR body */
+.diff {
+  font: 400 var(--text-sm) var(--mono);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow-y: auto;
+  max-height: 240px;
+  background: var(--well);
+}
+.row {
+  display: flex;
+  gap: var(--space-2);
+  padding: 0 var(--space-2);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.add { background: color-mix(in srgb, var(--ok) 12%, transparent); }
+.remove { background: color-mix(in srgb, var(--warn) 12%, transparent); }
+.gutter {
+  flex: 0 0 auto;
+  width: 1ch;
+  color: var(--text-dim);
+  user-select: none;
+}
+.text { flex: 1 1 auto; }

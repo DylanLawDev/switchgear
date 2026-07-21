@@ -1,0 +1,47 @@
+/* px literals below are structural geometry (widths/glyph metrics/shadows) — no token equivalent; interpretation logged in PR body */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--well) 70%, transparent);
+  animation: overlay-in var(--dur) var(--ease);
+}
+.content {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(560px, calc(100vw - var(--space-6)));
+  max-height: calc(100vh - var(--space-7));
+  overflow-y: auto;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  animation: content-in var(--dur) var(--ease);
+}
+.title {
+  font: 600 var(--text-lg) var(--sans);
+  margin: 0 0 var(--space-4);
+}
+.body {
+  color: var(--text);
+}
+.close {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-size: var(--text-lg);
+  line-height: 1;
+  cursor: pointer;
+  padding: var(--space-1);
+}
+.close:hover { color: var(--signal); }
+
+@keyframes overlay-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes content-in {
+  from { opacity: 0; transform: translate(-50%, -50%) translateY(8px); }
+  to { opacity: 1; transform: translate(-50%, -50%) translateY(0); }
+}

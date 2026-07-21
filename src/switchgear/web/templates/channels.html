@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>switchgear &middot; channels</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="page-channels" data-channel="{{ channel_name }}">
+  {% include "_header.html" %}
+  <main class="page">
+    <h1>Channel: {{ channel_name }}</h1>
+    <section id="status">
+      <h2>Status</h2>
+      <p id="status-line">loading…</p>
+      <button id="poll-now">Poll now</button>
+      <p id="status-error"></p>
+    </section>
+    <section id="flagged-section" data-channel="{{ channel_name }}">
+      <h2>Flagged by triage</h2>
+      <p id="flagged-empty">Nothing flagged.</p>
+      <ul id="flagged-list"></ul>
+    </section>
+    <section id="send-functions">
+      <h2>Send functions</h2>
+      <ul id="fn-list"></ul>
+      <h3>New / edit send function</h3>
+      <input id="fn-name" placeholder="name (lowercase-with-dashes)">
+      <input id="fn-description" placeholder="description">
+      <label>Gate
+        <select id="fn-gate">
+          <option value="approve" selected>approve</option>
+          <option value="auto">auto (reply_to_thread/owner only)</option>
+        </select>
+      </label>
+      <label>Recipient rule
+        <select id="fn-rule-type">
+          <option value="fixed" selected>fixed</option>
+          <option value="allowlist">allowlist</option>
+          <option value="reply_to_thread">reply_to_thread</option>
+          <option value="owner">owner</option>
+        </select>
+      </label>
+      <input id="fn-addresses"
+             placeholder="address (fixed) or comma-separated allowlist">
+      <label>Rate limit/day (0 = no sends)
+        <input id="fn-rate" type="number" min="0" value="5"></label>
+      <label>Enabled <input id="fn-enabled" type="checkbox" checked></label>
+      <input id="fn-subject" placeholder="subject template">
+      <textarea id="fn-body" rows="6" style="width:100%;font-family:monospace"
+                placeholder="body template (text/plain; slots from params plus sender/date)"></textarea>
+      <textarea id="fn-params" rows="4" style="width:100%;font-family:monospace"
+                placeholder='params as JSON, e.g. {"role": {"type": "string", "max_chars": 120}}'></textarea>
+      <button id="fn-save">Save function</button>
+      <p id="fn-error"></p>
+    </section>
+    <section id="suppression">
+      <h2>Suppression list</h2>
+      <ul id="suppression-list"></ul>
+      <input id="suppress-address" placeholder="address@example.com">
+      <button id="suppress-add">Suppress</button>
+      <p id="suppression-error"></p>
+    </section>
+  </main>
+  <script src="/static/channels.js"></script>
+</body>
+</html>
