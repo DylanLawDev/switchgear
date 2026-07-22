@@ -20,14 +20,14 @@ SWITCHGEAR_ENV_FILE=$ENV_FILE
 EOF
 
 cd "$ROOT"
-docker compose --project-name "$PROJECT" --env-file "$ENV_FILE" up -d --build --wait agent
+docker compose --project-name "$PROJECT" --env-file "$ENV_FILE" up -d --build --wait switchgear
 for _ in $(seq 1 30); do
   curl --fail --silent http://127.0.0.1:8080/healthz && break
   sleep 2
 done
 curl --fail --silent http://127.0.0.1:8080/healthz >/dev/null
-docker compose --project-name "$PROJECT" --env-file "$ENV_FILE" exec -T agent \
+docker compose --project-name "$PROJECT" --env-file "$ENV_FILE" exec -T switchgear \
   python -c "import asyncio; from switchgear.storage.sqlite import SQLiteStorage; asyncio.run(SQLiteStorage('/data/switchgear.sqlite3').put('smoke','persistent',{'ok':True}))"
-docker compose --project-name "$PROJECT" --env-file "$ENV_FILE" up -d --force-recreate --wait agent
-docker compose --project-name "$PROJECT" --env-file "$ENV_FILE" exec -T agent \
+docker compose --project-name "$PROJECT" --env-file "$ENV_FILE" up -d --force-recreate --wait switchgear
+docker compose --project-name "$PROJECT" --env-file "$ENV_FILE" exec -T switchgear \
   python -c "import asyncio; from switchgear.storage.sqlite import SQLiteStorage; assert asyncio.run(SQLiteStorage('/data/switchgear.sqlite3').get('smoke','persistent')) == {'ok': True}"

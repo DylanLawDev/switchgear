@@ -73,8 +73,8 @@ async def test_manual_run_and_run_history():
     assert len(runs) == 1 and runs[0]["trigger"] == "manual"
 
 
-async def test_seed_dir_loads_example_skill():
+async def test_seed_dir_loads_system_skill():
     app = create_app(settings=S, gateway=FakeGateway([]), storage=MemoryStorage())
     seeded = await app.state.switchgear.skill_store.seed_dir("skills")
     assert seeded >= 1
-    assert (await app.state.switchgear.skill_store.get("example-brief"))["status"] == "active"
+    assert (await app.state.switchgear.skill_store.get("author-skills"))["status"] == "active"
