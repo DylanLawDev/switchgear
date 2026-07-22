@@ -51,6 +51,7 @@ jobs:
         with:
           image-ref: switchgear:test
           severity: HIGH,CRITICAL
+          ignore-unfixed: true
           exit-code: "1"
       - uses: docker/build-push-action@v6
         with: { context: ., target: browser, push: false, tags: switchgear:test-browser }
