@@ -1,9 +1,9 @@
 from switchgear.config import Settings
 from switchgear.email.sender import (
-    ConsoleEmailSender,
-    DynamicEmailSender,
-    EmailSender,
-    SMTPEmailSender,
+    ConsoleEmailSender as ConsoleEmailSender,
+    DynamicEmailSender as DynamicEmailSender,
+    EmailSender as EmailSender,
+    SMTPEmailSender as SMTPEmailSender,
 )
 
 

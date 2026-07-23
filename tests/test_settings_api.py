@@ -1,4 +1,5 @@
 import httpx
+import respx
 
 from switchgear.auth import sign_session
 from switchgear.config import Settings
@@ -180,8 +181,6 @@ async def test_secure_overrides_loaded_from_storage():
     assert state.settings.local_password_hash == "scrypt:x"
     assert state.settings.owner_email == "db@x.y"
 
-
-import respx
 
 
 @respx.mock
