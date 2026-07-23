@@ -24,7 +24,7 @@ from switchgear import auth
 from switchgear.chat_runs import ChatRun
 from switchgear.artifacts import resolve_artifact_path
 from switchgear.browser import BrowserManager
-from switchgear.config import Settings, get_settings
+from switchgear.config import DEV_SESSION_SECRET, Settings, get_settings
 from switchgear.conversations import ConversationStore
 from switchgear.email import get_email_sender
 from switchgear.gateway import Gateway
@@ -42,8 +42,6 @@ from switchgear.web.deps import AppState
 from switchgear.web.spa import spa_index, spa_response
 
 WEB_DIR = Path(__file__).parent
-
-DEV_SESSION_SECRET = "dev-secret-change-me"
 
 logger = logging.getLogger(__name__)
 
