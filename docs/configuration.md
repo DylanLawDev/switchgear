@@ -13,6 +13,7 @@ password hash) are write-only: the API reports only whether they are set.
 | Group | Setting | Default | Notes |
 |---|---|---|---|
 | Core | `SWITCHGEAR_STATE_DIR` | `.state` | Container images set `/data`. |
+| Core | `SWITCHGEAR_USER_DIR` | `user` | Gitignored tenant definitions seeded on boot (see below). |
 | Setup | `SWITCHGEAR_SETUP_TOKEN` | generated | Presets the one-time claim token; otherwise it is generated and logged on first boot (`SETUP required — … token: …`). |
 | Models | `SWITCHGEAR_GATEWAY_BASE_URL` | OpenRouter-compatible URL | Any OpenAI-compatible gateway. |
 | Models | `SWITCHGEAR_GATEWAY_API_KEY` | empty | Required by the configured gateway. |
@@ -28,3 +29,14 @@ password hash) are write-only: the API reports only whether they are set.
 Firestore and cloud scheduling require the `gcp` extra and normal provider identity
 configuration. Missing optional packages produce an import error only when their
 adapter is selected.
+
+## User seed directory
+
+Tenant-owned definitions live in a gitignored `user/` directory mirroring the
+system seed layout: `user/skills/<name>/SKILL.md`,
+`user/workflows/<name>/WORKFLOW.md`, `user/agents/<name>/AGENT.md`,
+`user/channels/<name>/CHANNEL.md`, and `user/resources/<name>.<kind>`. They
+seed on boot with source `owner` and activate immediately. Repo updates never
+touch owner-sourced definitions and vice versa; if a user definition reuses a
+system name, whichever seeded first wins (system dirs seed first). Keep
+private automations here — they never belong in the repository.
