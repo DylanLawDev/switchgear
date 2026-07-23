@@ -48,3 +48,20 @@ class SMTPEmailSender(EmailSender):
                 smtp.send_message(message)
 
         await asyncio.to_thread(_send)
+
+
+class DynamicEmailSender(EmailSender):
+    """Delegates per send so the backend can change at runtime (Settings UI)."""
+
+    def __init__(self, settings: Settings):
+        self._s = settings
+        self.console = ConsoleEmailSender()
+        self.smtp = SMTPEmailSender(settings)
+
+    @property
+    def sent(self) -> list[dict]:
+        return self.console.sent
+
+    async def send(self, to: str, subject: str, html: str) -> None:
+        sender = self.smtp if self._s.email_backend == "smtp" else self.console
+        await sender.send(to, subject, html)
