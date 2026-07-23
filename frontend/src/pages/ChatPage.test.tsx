@@ -287,3 +287,19 @@ test("switching conversations mid-stream aborts the old stream and drops its str
   });
   expect(screen.queryByText(/Aborted/i)).not.toBeInTheDocument();
 });
+
+test("bare visit resumes the most recent conversation", async () => {
+  mockConversations();
+  renderWithProviders(<ChatPage />, { route: "/", path: "/" });
+  // conv1 is newest (updated_at 100) — its history should load without ?c
+  await screen.findByText("existing user msg");
+});
+
+test("new chat stays fresh even with existing conversations", async () => {
+  mockConversations();
+  renderWithProviders(<ChatPage />, { route: "/?c=conv1", path: "/" });
+  await screen.findByText("existing user msg");
+  await userEvent.click(screen.getByRole("button", { name: /new chat/i }));
+  await waitFor(() =>
+    expect(screen.queryByText("existing user msg")).not.toBeInTheDocument());
+});

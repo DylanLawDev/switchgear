@@ -16,10 +16,19 @@ export default function ChatPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const urlId = searchParams.get("c");
   const [newConversationId, setNewConversationId] = useState(() => crypto.randomUUID());
+  const [wantsNew, setWantsNew] = useState(false);
   const conversationId = urlId ?? newConversationId;
 
   const qc = useQueryClient();
   const { data: conversations = [] } = useConversations();
+
+  // A bare visit resumes the most recent conversation; an explicit "New chat"
+  // (wantsNew) or an empty instance keeps the fresh-conversation behavior.
+  useEffect(() => {
+    if (!urlId && !wantsNew && conversations.length > 0) {
+      setSearchParams({ c: conversations[0]._id }, { replace: true });
+    }
+  }, [urlId, wantsNew, conversations, setSearchParams]);
   const { data: history } = useConversationMessages(conversationId);
 
   const [transcript, setTranscript] = useState<TranscriptItem[]>([]);
@@ -99,6 +108,7 @@ export default function ChatPage() {
   function startNewChat() {
     abortControllerRef.current?.abort();
     assistantIdRef.current = null;
+    setWantsNew(true);
     setNewConversationId(crypto.randomUUID());
     setSearchParams({}, { replace: false });
     setTranscript([]);
