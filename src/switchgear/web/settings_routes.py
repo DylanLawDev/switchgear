@@ -1,6 +1,9 @@
+from typing import Literal
+from zoneinfo import ZoneInfo
+
 from fastapi import Depends
 from fastapi.responses import RedirectResponse
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from switchgear import auth
 from switchgear.web.spa import spa_index, spa_response
@@ -8,11 +11,20 @@ from switchgear.web.spa import spa_index, spa_response
 
 SETTINGS_COLLECTION = "app-settings"
 SETTINGS_KEY = "user"
+SECURE_KEY = "secure"
 
 
 class UserSettings(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    gateway_base_url: str = Field(min_length=8, max_length=500, pattern=r"^https?://")
+    owner_timezone: str = Field(min_length=1, max_length=100)
+    email_backend: Literal["console", "smtp"]
+    smtp_host: str = Field(max_length=500)
+    smtp_port: int = Field(ge=1, le=65535)
+    smtp_username: str = Field(max_length=500)
+    smtp_from: str = Field(max_length=500)
+    smtp_starttls: bool
     model_chat: str = Field(min_length=1, max_length=200)
     model_bulk: str = Field(min_length=1, max_length=200)
     model_writing: str = Field(min_length=1, max_length=200)
@@ -30,6 +42,21 @@ class UserSettings(BaseModel):
     channel_body_max_chars: int = Field(ge=1_000, le=1_000_000)
     channel_backfill_max: int = Field(ge=1, le=10_000)
     channel_reply_rate_per_day: int = Field(ge=1, le=10_000)
+
+    @field_validator("owner_timezone")
+    @classmethod
+    def _known_timezone(cls, value: str) -> str:
+        try:
+            ZoneInfo(value)
+        except Exception:
+            raise ValueError("unknown timezone") from None
+        return value
+
+    @model_validator(mode="after")
+    def _smtp_complete(self) -> "UserSettings":
+        if self.email_backend == "smtp" and not (self.smtp_host and self.smtp_from):
+            raise ValueError("smtp_host and smtp_from are required for the smtp backend")
+        return self
 
 
 USER_SETTING_NAMES = tuple(UserSettings.model_fields)

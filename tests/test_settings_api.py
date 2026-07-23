@@ -80,3 +80,47 @@ async def test_logout_expires_session_cookie():
     assert response.json() == {"ok": True}
     cookie = response.headers["set-cookie"]
     assert "session=" in cookie and "Max-Age=0" in cookie
+
+
+async def test_settings_includes_gateway_and_email_fields():
+    app = make_app()
+    async with client(app) as c:
+        body = (await c.get("/api/settings")).json()
+    assert body["gateway_base_url"].startswith("https://")
+    assert body["email_backend"] == "console"
+    assert body["owner_timezone"] == "Etc/UTC"
+    assert body["smtp_port"] == 587
+
+
+async def test_settings_put_smtp_requires_host_and_from():
+    app = make_app()
+    async with client(app) as c:
+        current = (await c.get("/api/settings")).json()
+        current.pop("owner_email")
+        current.update({"email_backend": "smtp", "smtp_host": "", "smtp_from": ""})
+        response = await c.put("/api/settings", json=current)
+    assert response.status_code == 422
+
+
+async def test_settings_put_rejects_unknown_timezone():
+    app = make_app()
+    async with client(app) as c:
+        current = (await c.get("/api/settings")).json()
+        current.pop("owner_email")
+        current["owner_timezone"] = "Mars/Olympus"
+        response = await c.put("/api/settings", json=current)
+    assert response.status_code == 422
+
+
+async def test_settings_put_applies_gateway_base_url():
+    storage = MemoryStorage()
+    app = make_app(storage)
+    async with client(app) as c:
+        current = (await c.get("/api/settings")).json()
+        current.pop("owner_email")
+        current["gateway_base_url"] = "https://gw.example/v1"
+        response = await c.put("/api/settings", json=current)
+    assert response.status_code == 200
+    assert app.state.switchgear.settings.gateway_base_url == "https://gw.example/v1"
+    assert (await storage.get("app-settings", "user"))["gateway_base_url"] \
+        == "https://gw.example/v1"
