@@ -11,7 +11,7 @@ import { UserSettings } from "../api/types";
 import styles from "./SettingsPage.module.css";
 
 type EditableSettings =
-  Omit<UserSettings, "owner_email" | "gateway_api_key_set" | "smtp_password_set">;
+  Omit<UserSettings, "owner" | "gateway_api_key_set" | "smtp_password_set">;
 type SettingKey = keyof EditableSettings;
 
 interface FieldSpec {
@@ -73,7 +73,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (data) {
-      const { owner_email: _ownerEmail, gateway_api_key_set: _keySet,
+      const { owner: _owner, gateway_api_key_set: _keySet,
               smtp_password_set: _pwSet, ...editable } = data;
       setDraft(editable);
     }
@@ -233,7 +233,7 @@ export default function SettingsPage() {
       <section className={`${styles.section} ${styles.account}`}>
         <div className={styles.accountMeta}>
           <strong>Account</strong>
-          {data.owner_email}
+          {data.owner}
         </div>
         <Button variant="danger" onClick={() => logout.mutate()} disabled={logout.isPending}>Log out</Button>
         {logout.error && <span className={styles.error}>{logout.error.message}</span>}

@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     model_bulk: str = "google/gemini-2.5-flash"
     model_writing: str = "anthropic/claude-sonnet-4.5"
     owner_email: str = ""
+    owner_nickname: str = ""
     session_secret: str = "dev-secret-change-me"
     storage_backend: Literal["sqlite", "memory", "firestore"] = "sqlite"
     email_backend: Literal["console", "smtp"] = "console"

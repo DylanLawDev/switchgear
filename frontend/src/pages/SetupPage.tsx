@@ -40,7 +40,7 @@ function ClaimStep({ onDone }: { onDone: () => void }) {
   const [params] = useSearchParams();
   const claim = useClaim();
   const [token, setToken] = useState(params.get("token") ?? "");
-  const [email, setEmail] = useState("");
+  const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [localError, setLocalError] = useState("");
@@ -53,7 +53,7 @@ function ClaimStep({ onDone }: { onDone: () => void }) {
     }
     setLocalError("");
     claim.mutate(
-      { token, password, owner_email: email,
+      { token, password, nickname,
         owner_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone },
       { onSuccess: onDone },
     );
@@ -70,9 +70,10 @@ function ClaimStep({ onDone }: { onDone: () => void }) {
                onChange={(e) => setToken(e.target.value)} required />
       </label>
       <label className={styles.field}>
-        <span>Email</span>
-        <input aria-label="Email" type="email" value={email}
-               onChange={(e) => setEmail(e.target.value)} required />
+        <span>Nickname</span>
+        <small>How the agent should address you. No email needed.</small>
+        <input aria-label="Nickname" value={nickname}
+               onChange={(e) => setNickname(e.target.value)} required />
       </label>
       <label className={styles.field}>
         <span>Password</span>
@@ -108,7 +109,7 @@ function GatewayStep({ onDone }: { onDone: () => void }) {
 
   function submit(event: FormEvent) {
     event.preventDefault();
-    const { owner_email: _e, gateway_api_key_set: _g, smtp_password_set: _s,
+    const { owner: _o, gateway_api_key_set: _g, smtp_password_set: _s,
             ...editable } = data!;
     save.mutate(
       { ...editable, gateway_base_url: effectiveBase, model_chat: effectiveModel,

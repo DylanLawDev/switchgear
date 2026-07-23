@@ -6,7 +6,7 @@ import { renderWithProviders } from "../test/utils";
 import SettingsPage from "./SettingsPage";
 
 const settings = {
-  owner_email: "owner@example.com",
+  owner: "dylan",
   gateway_base_url: "https://openrouter.ai/api/v1",
   owner_timezone: "Etc/UTC",
   email_backend: "console",
@@ -60,10 +60,10 @@ test("edits and saves user-facing settings and shows account controls", async ()
   await user.click(screen.getByRole("button", { name: "Save settings" }));
 
   await waitFor(() => expect(saved).toMatchObject({ model_chat: "new/chat-model" }));
-  expect(saved).not.toHaveProperty("owner_email");
+  expect(saved).not.toHaveProperty("owner");
   expect(saved).not.toHaveProperty("gateway_api_key");
   expect(await screen.findByText("saved")).toBeInTheDocument();
-  expect(screen.getByText("owner@example.com")).toBeInTheDocument();
+  expect(screen.getByText("dylan")).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Log out" })).toBeInTheDocument();
 });
 

@@ -78,7 +78,7 @@ New/changed endpoints (all JSON):
 - `GET /api/setup/status` (public): `{"claimed": bool}`. Used by the script
   and the wizard; no other data.
 - `POST /api/setup/claim` (public, token-gated):
-  `{token, password, owner_email, owner_timezone?}` →
+  `{token, password, nickname, owner_timezone?}` →
   validates token with `hmac.compare_digest` (403 + ~0.5 s sleep on failure),
   requires password length ≥ 8, hashes with the existing scrypt helper
   (moved from `cli.py` to `auth.py`; CLI imports from there), writes
@@ -121,8 +121,9 @@ settings per send). Console output remains the default.
 
 - **`/setup` — SetupPage**, routed outside `AppShell` (no nav chrome).
   Three steps, single card layout:
-  1. **Claim**: token (pre-filled from `?token=` query param), owner email,
-     password + confirm. Submits claim; on success proceeds (session cookie now
+  1. **Claim**: token (pre-filled from `?token=` query param), nickname
+     (local tenants need no email; `SWITCHGEAR_OWNER_EMAIL` remains the
+     env-configured option for email features), password + confirm. Submits claim; on success proceeds (session cookie now
      set).
   2. **Gateway**: base URL (default from settings), API key, chat model;
      "Test connection" button calling test-gateway; Save via

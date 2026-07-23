@@ -21,6 +21,12 @@ def _serializer(settings: Settings, salt: str = "session") -> URLSafeTimedSerial
     return URLSafeTimedSerializer(settings.session_secret, salt=salt)
 
 
+def owner_identity(settings: Settings) -> str:
+    """Display/session identity: nickname for wizard-claimed local tenants,
+    email for env-configured deployments."""
+    return settings.owner_nickname or settings.owner_email
+
+
 def sign_session(settings: Settings, email: str) -> str:
     return _serializer(settings).dumps({"email": email})
 
@@ -33,7 +39,7 @@ def verify_session(settings: Settings, cookie: str | None) -> str | None:
     except (BadSignature, SignatureExpired):
         return None
     email = data.get("email")
-    return email if email == settings.owner_email else None
+    return email if email and email == owner_identity(settings) else None
 
 
 def verify_password(password: str, encoded: str) -> bool:
@@ -77,7 +83,7 @@ async def local_login(request: Request, settings: Settings = Depends(get_setting
     if not verify_password(password, settings.local_password_hash):
         raise HTTPException(403, "invalid credentials")
     response = RedirectResponse("/", status_code=303)
-    response.set_cookie("session", sign_session(settings, settings.owner_email), httponly=True,
+    response.set_cookie("session", sign_session(settings, owner_identity(settings)), httponly=True,
                         secure=settings.cookie_secure, samesite=settings.cookie_samesite,
                         max_age=SESSION_MAX_AGE)
     response.delete_cookie("login_csrf")

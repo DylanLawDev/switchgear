@@ -478,7 +478,7 @@ def create_app(settings: Settings | None = None, gateway=None, storage=None,
                     logger.warning(
                         "memory injection failed — proceeding without memory sections",
                         exc_info=True)
-                fresh = system_prompt(settings.owner_email, skills=active,
+                fresh = system_prompt(auth.owner_identity(settings), skills=active,
                                       core_memories=core, recalled=recalled)
                 if history and history[0].get("role") == "system":
                     history[0] = {"role": "system", "content": fresh}
