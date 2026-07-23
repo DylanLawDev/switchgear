@@ -31,3 +31,6 @@ data/
 *.sqlite3-wal
 *.sqlite3-shm
 artifacts/
+
+# Tenant-owned definitions (skills/workflows/agents/resources/channels)
+/user/

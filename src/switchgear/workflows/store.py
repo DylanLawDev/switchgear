@@ -81,7 +81,7 @@ class WorkflowStore:
         await self._db.put(COLLECTION, name, doc)
         return doc
 
-    async def seed_dir(self, path: str) -> int:
+    async def seed_dir(self, path: str, *, source: str = "repo") -> int:
         root = Path(path)
         if not root.exists():
             return 0
@@ -100,9 +100,9 @@ class WorkflowStore:
             name = doc["name"]
             existing = await self.get(name)
             if existing is None:
-                await self.save(text, source="repo")
+                await self.save(text, source=source)
                 count += 1
-            elif existing.get("source") == "repo" and existing.get("text") != text:
+            elif existing.get("source") == source and existing.get("text") != text:
                 record = {**existing, **doc, "text": text,
                           "status": existing["status"], "source": existing["source"],
                           "updated_at": time.time()}

@@ -230,9 +230,13 @@ def create_app(settings: Settings | None = None, gateway=None, storage=None,
         await load_secure_overrides(state)
         await ensure_session_secret(state)
         await announce_setup(state)
+        user_root = Path(settings.user_dir)
         await state.skill_store.seed_dir(settings.skills_dir)
+        await state.skill_store.seed_dir(str(user_root / "skills"), source="owner")
         await state.agent_profiles.seed_dir(settings.agents_dir)
+        await state.agent_profiles.seed_dir(str(user_root / "agents"), source="owner")
         await state.workflow_store.seed_dir(settings.workflows_dir)
+        await state.workflow_store.seed_dir(str(user_root / "workflows"), source="owner")
         # One-release compatibility migration: old skill cron metadata/jobs become
         # workflow schedules when exactly one workflow names that skill as intake.
         legacy_jobs = {row["skill"]: row for row in await state.scheduler.list()
@@ -260,6 +264,7 @@ def create_app(settings: Settings | None = None, gateway=None, storage=None,
         for workflow in await state.workflow_store.active_definitions():
             await state.workflow_store.purge_expired_items(workflow)
         await state.resource_store.seed_dir(settings.resources_dir)
+        await state.resource_store.seed_dir(str(user_root / "resources"))
 
         from switchgear.channels.ingest import ChannelIngest
         from switchgear.channels.transport import get_transport
@@ -278,6 +283,7 @@ def create_app(settings: Settings | None = None, gateway=None, storage=None,
             schedule_tick_task = asyncio.create_task(_schedule_tick())
 
         await state.channel_store.seed_dir(settings.channels_dir)
+        await state.channel_store.seed_dir(str(user_root / "channels"), source="owner")
         scheduled_docs = await state.scheduler.list()
         scheduled = {s["skill"] for s in scheduled_docs}
         scheduled_by_skill = {s["skill"]: s for s in scheduled_docs}

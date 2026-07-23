@@ -44,6 +44,8 @@ class Settings(BaseSettings):
     skills_dir: str = "skills"
     workflows_dir: str = "workflows"
     agents_dir: str = "agents"
+    # Tenant-owned definitions seeded alongside the system dirs; gitignored.
+    user_dir: str = "user"
     scheduler_backend: Literal["local", "cloud"] = "local"
     task_queue: str = "switchgear-workflows"
     owner_timezone: str = "Etc/UTC"
