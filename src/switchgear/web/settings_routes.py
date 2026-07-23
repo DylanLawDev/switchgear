@@ -66,6 +66,23 @@ def current_user_settings(settings) -> dict:
     return {name: getattr(settings, name) for name in USER_SETTING_NAMES}
 
 
+SECURE_SETTING_NAMES = ("gateway_api_key", "smtp_password", "local_password_hash",
+                        "owner_email", "session_secret")
+
+
+def secret_presence(settings) -> dict:
+    return {"gateway_api_key_set": bool(settings.gateway_api_key),
+            "smtp_password_set": bool(settings.smtp_password)}
+
+
+async def load_secure_overrides(state) -> None:
+    stored = await state.storage.get(SETTINGS_COLLECTION, SECURE_KEY) or {}
+    for name in SECURE_SETTING_NAMES:
+        value = stored.get(name)
+        if value:
+            setattr(state.settings, name, value)
+
+
 async def load_settings_overrides(state) -> None:
     stored = await state.storage.get(SETTINGS_COLLECTION, SETTINGS_KEY)
     if not stored:
@@ -73,6 +90,11 @@ async def load_settings_overrides(state) -> None:
     values = UserSettings.model_validate({**current_user_settings(state.settings), **stored})
     for name, value in values.model_dump().items():
         setattr(state.settings, name, value)
+
+
+class UserSettingsUpdate(UserSettings):
+    gateway_api_key: str = Field(default="", max_length=500)
+    smtp_password: str = Field(default="", max_length=500)
 
 
 def register_settings_routes(app, state) -> None:
@@ -84,13 +106,23 @@ def register_settings_routes(app, state) -> None:
 
     @app.get("/api/settings")
     async def get_user_settings(email: str = Depends(auth.require_owner)):
-        return {**current_user_settings(state.settings), "owner_email": email}
+        return {**current_user_settings(state.settings), "owner_email": email,
+                **secret_presence(state.settings)}
 
     @app.put("/api/settings")
-    async def put_user_settings(body: UserSettings,
+    async def put_user_settings(body: UserSettingsUpdate,
                                 email: str = Depends(auth.require_owner)):
         values = body.model_dump()
+        secret_values = {name: values.pop(name)
+                         for name in ("gateway_api_key", "smtp_password")}
         await state.storage.put(SETTINGS_COLLECTION, SETTINGS_KEY, values)
         for name, value in values.items():
             setattr(state.settings, name, value)
-        return {**values, "owner_email": email}
+        updates = {name: value for name, value in secret_values.items() if value}
+        if updates:
+            stored = await state.storage.get(SETTINGS_COLLECTION, SECURE_KEY) or {}
+            stored.update(updates)
+            await state.storage.put(SETTINGS_COLLECTION, SECURE_KEY, stored)
+            for name, value in updates.items():
+                setattr(state.settings, name, value)
+        return {**values, "owner_email": email, **secret_presence(state.settings)}

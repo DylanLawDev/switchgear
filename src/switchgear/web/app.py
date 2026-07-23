@@ -220,9 +220,13 @@ def create_app(settings: Settings | None = None, gateway=None, storage=None,
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI):
-        from switchgear.web.settings_routes import load_settings_overrides
+        from switchgear.web.settings_routes import (
+            load_secure_overrides,
+            load_settings_overrides,
+        )
 
         await load_settings_overrides(state)
+        await load_secure_overrides(state)
         await state.skill_store.seed_dir(settings.skills_dir)
         await state.agent_profiles.seed_dir(settings.agents_dir)
         await state.workflow_store.seed_dir(settings.workflows_dir)
