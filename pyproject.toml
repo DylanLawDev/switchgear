@@ -11,7 +11,7 @@ dependencies = [
     "itsdangerous>=2.2",
     "jinja2>=3.1",
     "pyyaml>=6",
-    "jsonschema>=4.23",
+    "jsonschema>=4.26.0",
     "croniter>=3.0",
     "cel-expr-python>=0.1.3",
 ]
