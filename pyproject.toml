@@ -36,7 +36,7 @@ full = [
 switchgear = "switchgear.cli:main"
 
 [dependency-groups]
-dev = ["pytest>=8", "pytest-asyncio>=0.23", "respx>=0.21", "ruff>=0.5"]
+dev = ["pytest>=8", "pytest-asyncio>=0.23", "respx>=0.23.1", "ruff>=0.5"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
