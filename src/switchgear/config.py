@@ -6,6 +6,8 @@ from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+DEV_SESSION_SECRET = "dev-secret-change-me"
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="SWITCHGEAR_", env_file=".env", extra="ignore")
@@ -35,6 +37,7 @@ class Settings(BaseSettings):
     max_loop_iterations: int = 20
     service_url: str = "http://localhost:8080"
     cron_secret: str = ""
+    setup_token: str = ""
     gcp_project: str = ""
     gcp_region: str = "us-central1"
     skills_dir: str = "skills"
@@ -76,15 +79,11 @@ class Settings(BaseSettings):
 
     def validate_runtime(self) -> None:
         """Validate only settings needed by selected runtime adapters."""
-        if self.session_secret == "dev-secret-change-me" and self.cookie_secure:
+        if self.session_secret == DEV_SESSION_SECRET and self.cookie_secure:
             # Local development remains convenient when explicitly bound to localhost.
             host = self.public_base_url.split("://", 1)[-1].split("/", 1)[0].split(":", 1)[0]
             if host not in {"localhost", "127.0.0.1", "::1"}:
                 raise RuntimeError("SWITCHGEAR_SESSION_SECRET must be changed for a public service")
-        if not self.local_password_hash:
-            raise RuntimeError("SWITCHGEAR_LOCAL_PASSWORD_HASH is required for local authentication")
-        if not self.owner_email:
-            raise RuntimeError("SWITCHGEAR_OWNER_EMAIL is required")
         if self.email_backend == "smtp" and (not self.smtp_host or not self.smtp_from):
             raise RuntimeError("SWITCHGEAR_SMTP_HOST and SWITCHGEAR_SMTP_FROM are required for SMTP")
         if self.scheduler_backend == "cloud" and not self.cron_secret:

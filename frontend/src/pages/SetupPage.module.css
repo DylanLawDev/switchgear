@@ -1,0 +1,22 @@
+.page {
+  max-width: 30rem;
+  margin: 10vh auto 0;
+  padding: 0 1rem;
+}
+.card {
+  border: 1px solid var(--border, #d0d0d0);
+  border-radius: 8px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.field small { opacity: 0.7; }
+.error { color: var(--danger, #b00020); }
+.success { color: var(--ok, #1a7f37); }
+.actions { display: flex; gap: 0.75rem; align-items: center; margin-top: 0.5rem; flex-wrap: wrap; }

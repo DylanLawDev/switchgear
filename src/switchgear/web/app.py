@@ -24,7 +24,7 @@ from switchgear import auth
 from switchgear.chat_runs import ChatRun
 from switchgear.artifacts import resolve_artifact_path
 from switchgear.browser import BrowserManager
-from switchgear.config import Settings, get_settings
+from switchgear.config import DEV_SESSION_SECRET, Settings, get_settings
 from switchgear.conversations import ConversationStore
 from switchgear.email import get_email_sender
 from switchgear.gateway import Gateway
@@ -42,8 +42,6 @@ from switchgear.web.deps import AppState
 from switchgear.web.spa import spa_index, spa_response
 
 WEB_DIR = Path(__file__).parent
-
-DEV_SESSION_SECRET = "dev-secret-change-me"
 
 logger = logging.getLogger(__name__)
 
@@ -222,9 +220,16 @@ def create_app(settings: Settings | None = None, gateway=None, storage=None,
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI):
-        from switchgear.web.settings_routes import load_settings_overrides
+        from switchgear.web.settings_routes import (
+            load_secure_overrides,
+            load_settings_overrides,
+        )
+        from switchgear.web.setup_routes import announce_setup, ensure_session_secret
 
         await load_settings_overrides(state)
+        await load_secure_overrides(state)
+        await ensure_session_secret(state)
+        await announce_setup(state)
         await state.skill_store.seed_dir(settings.skills_dir)
         await state.agent_profiles.seed_dir(settings.agents_dir)
         await state.workflow_store.seed_dir(settings.workflows_dir)
@@ -395,6 +400,8 @@ def create_app(settings: Settings | None = None, gateway=None, storage=None,
 
     @app.get("/login", response_class=HTMLResponse)
     async def login_page(request: Request):
+        if not state.settings.local_password_hash:
+            return RedirectResponse("/setup", status_code=307)
         if auth.verify_session(settings, request.cookies.get("session")):
             return RedirectResponse("/", status_code=307)
         csrf = auth.login_csrf(settings)
@@ -636,5 +643,9 @@ def create_app(settings: Settings | None = None, gateway=None, storage=None,
     from switchgear.web.settings_routes import register_settings_routes
 
     register_settings_routes(app, state)
+
+    from switchgear.web.setup_routes import register_setup_routes
+
+    register_setup_routes(app, state)
 
     return app

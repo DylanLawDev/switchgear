@@ -11,7 +11,8 @@ from switchgear.storage.memory import MemoryStorage
 from switchgear.web.app import create_app
 from tests.fakes import FakeGateway
 
-S = Settings(_env_file=None, owner_email="me@example.com", session_secret="s3")
+S = Settings(_env_file=None, owner_email="me@example.com", session_secret="s3",
+             local_password_hash="scrypt:x")
 
 
 def make_client(gateway):

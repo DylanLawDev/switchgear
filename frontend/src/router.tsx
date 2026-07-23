@@ -11,8 +11,12 @@ import SettingsPage from "./pages/SettingsPage";
 import SchedulerPage from "./pages/SchedulerPage";
 import AgentsPage from "./pages/AgentsPage";
 import InboxPage from "./pages/InboxPage";
+import SetupPage from "./pages/SetupPage";
 
 export const routes = [{
+  path: "/setup",
+  element: <SetupPage />,
+}, {
   element: <AppShell />,
   children: [
     { path: "/", element: <ChatPage /> },

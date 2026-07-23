@@ -1,4 +1,5 @@
 import httpx
+import respx
 
 from switchgear.auth import sign_session
 from switchgear.config import Settings
@@ -40,7 +41,8 @@ async def test_settings_put_persists_and_applies_immediately():
     app = make_app(storage)
     async with client(app) as c:
         current = (await c.get("/api/settings")).json()
-        current.pop("owner_email")
+        current = {k: v for k, v in current.items()
+                   if k not in {"owner_email", "gateway_api_key_set", "smtp_password_set"}}
         current.update({"model_chat": "new/chat", "memory_recall_k": 9})
         response = await c.put("/api/settings", json=current)
     assert response.status_code == 200
@@ -80,3 +82,178 @@ async def test_logout_expires_session_cookie():
     assert response.json() == {"ok": True}
     cookie = response.headers["set-cookie"]
     assert "session=" in cookie and "Max-Age=0" in cookie
+
+
+async def test_settings_includes_gateway_and_email_fields():
+    app = make_app()
+    async with client(app) as c:
+        body = (await c.get("/api/settings")).json()
+    assert body["gateway_base_url"].startswith("https://")
+    assert body["email_backend"] == "console"
+    assert body["owner_timezone"] == "Etc/UTC"
+    assert body["smtp_port"] == 587
+
+
+async def test_settings_put_smtp_requires_host_and_from():
+    app = make_app()
+    async with client(app) as c:
+        current = (await c.get("/api/settings")).json()
+        current = {k: v for k, v in current.items()
+                   if k not in {"owner_email", "gateway_api_key_set", "smtp_password_set"}}
+        current.update({"email_backend": "smtp", "smtp_host": "", "smtp_from": ""})
+        response = await c.put("/api/settings", json=current)
+    assert response.status_code == 422
+
+
+async def test_settings_put_rejects_unknown_timezone():
+    app = make_app()
+    async with client(app) as c:
+        current = (await c.get("/api/settings")).json()
+        current = {k: v for k, v in current.items()
+                   if k not in {"owner_email", "gateway_api_key_set", "smtp_password_set"}}
+        current["owner_timezone"] = "Mars/Olympus"
+        response = await c.put("/api/settings", json=current)
+    assert response.status_code == 422
+
+
+async def test_settings_put_applies_gateway_base_url():
+    storage = MemoryStorage()
+    app = make_app(storage)
+    async with client(app) as c:
+        current = (await c.get("/api/settings")).json()
+        current = {k: v for k, v in current.items()
+                   if k not in {"owner_email", "gateway_api_key_set", "smtp_password_set"}}
+        current["gateway_base_url"] = "https://gw.example/v1"
+        response = await c.put("/api/settings", json=current)
+    assert response.status_code == 200
+    assert app.state.switchgear.settings.gateway_base_url == "https://gw.example/v1"
+    assert (await storage.get("app-settings", "user"))["gateway_base_url"] \
+        == "https://gw.example/v1"
+
+
+async def test_secrets_are_write_only_and_presence_reported():
+    storage = MemoryStorage()
+    app = make_app(storage)
+    async with client(app) as c:
+        body = (await c.get("/api/settings")).json()
+        assert body["gateway_api_key_set"] is False
+        payload = {k: v for k, v in body.items()
+                   if k not in {"owner_email", "gateway_api_key_set", "smtp_password_set"}}
+        payload["gateway_api_key"] = "sk-secret-123"
+        response = await c.put("/api/settings", json=payload)
+        assert response.status_code == 200
+        assert response.json()["gateway_api_key_set"] is True
+        assert "gateway_api_key" not in response.json()
+        body2 = (await c.get("/api/settings")).json()
+    assert body2["gateway_api_key_set"] is True
+    assert "gateway_api_key" not in body2
+    assert app.state.switchgear.settings.gateway_api_key == "sk-secret-123"
+    assert (await storage.get("app-settings", "secure"))["gateway_api_key"] == "sk-secret-123"
+
+
+async def test_put_with_empty_secret_keeps_existing():
+    storage = MemoryStorage()
+    app = make_app(storage)
+    async with client(app) as c:
+        body = (await c.get("/api/settings")).json()
+        payload = {k: v for k, v in body.items()
+                   if k not in {"owner_email", "gateway_api_key_set", "smtp_password_set"}}
+        payload["gateway_api_key"] = "sk-first"
+        await c.put("/api/settings", json=payload)
+        payload["gateway_api_key"] = ""
+        await c.put("/api/settings", json=payload)
+    assert app.state.switchgear.settings.gateway_api_key == "sk-first"
+
+
+async def test_secure_overrides_loaded_from_storage():
+    from switchgear.web.settings_routes import load_secure_overrides
+
+    storage = MemoryStorage()
+    await storage.put("app-settings", "secure",
+                      {"gateway_api_key": "sk-db", "smtp_password": "",
+                       "local_password_hash": "scrypt:x", "owner_email": "db@x.y"})
+    app = make_app(storage)
+    state = app.state.switchgear
+    state.settings.smtp_password = "env-value"
+    await load_secure_overrides(state)
+    assert state.settings.gateway_api_key == "sk-db"
+    assert state.settings.smtp_password == "env-value"  # empty DB value skipped
+    assert state.settings.local_password_hash == "scrypt:x"
+    assert state.settings.owner_email == "db@x.y"
+
+
+
+@respx.mock
+async def test_gateway_test_success_counts_models():
+    respx.get("https://gw.test/v1/models").respond(
+        json={"data": [{"id": "a"}, {"id": "b"}]})
+    app = make_app()
+    async with client(app) as c:
+        response = await c.post("/api/settings/test-gateway",
+                                json={"gateway_base_url": "https://gw.test/v1",
+                                      "gateway_api_key": "sk-x"})
+    assert response.status_code == 200
+    assert response.json() == {"ok": True, "models": 2}
+    assert respx.calls.last.request.headers["authorization"] == "Bearer sk-x"
+
+
+@respx.mock
+async def test_gateway_test_reports_auth_failure():
+    respx.get("https://gw.test/v1/models").respond(status_code=401)
+    app = make_app()
+    async with client(app) as c:
+        response = await c.post("/api/settings/test-gateway",
+                                json={"gateway_base_url": "https://gw.test/v1",
+                                      "gateway_api_key": "bad"})
+    assert response.json() == {"ok": False, "detail": "gateway returned 401"}
+
+
+@respx.mock
+async def test_gateway_test_falls_back_to_effective_settings():
+    respx.get("https://fallback.test/v1/models").respond(json={"data": []})
+    app = make_app()
+    app.state.switchgear.settings.gateway_base_url = "https://fallback.test/v1"
+    app.state.switchgear.settings.gateway_api_key = "sk-saved"
+    async with client(app) as c:
+        response = await c.post("/api/settings/test-gateway", json={})
+    assert response.json()["ok"] is True
+    assert respx.calls.last.request.headers["authorization"] == "Bearer sk-saved"
+
+
+@respx.mock
+async def test_gateway_test_reports_connection_error():
+    import httpx as _httpx
+    respx.get("https://down.test/v1/models").mock(
+        side_effect=_httpx.ConnectError("boom"))
+    app = make_app()
+    async with client(app) as c:
+        response = await c.post("/api/settings/test-gateway",
+                                json={"gateway_base_url": "https://down.test/v1",
+                                      "gateway_api_key": "k"})
+    assert response.json() == {"ok": False, "detail": "connection failed: ConnectError"}
+
+
+async def test_password_change_verifies_current_and_persists():
+    from switchgear.auth import hash_password, verify_password
+
+    storage = MemoryStorage()
+    settings = Settings(_env_file=None, owner_email=OWNER, session_secret="s3",
+                        local_password_hash=hash_password("old-password"))
+    app = create_app(settings=settings, storage=storage, gateway=FakeGateway([]))
+    async with client(app) as c:
+        bad = await c.post("/api/settings/password",
+                           json={"current_password": "nope",
+                                 "new_password": "new-password-1"})
+        assert bad.status_code == 403
+        short = await c.post("/api/settings/password",
+                             json={"current_password": "old-password",
+                                   "new_password": "short"})
+        assert short.status_code == 422
+        good = await c.post("/api/settings/password",
+                            json={"current_password": "old-password",
+                                  "new_password": "new-password-1"})
+    assert good.status_code == 200
+    effective = app.state.switchgear.settings.local_password_hash
+    assert verify_password("new-password-1", effective)
+    stored = await storage.get("app-settings", "secure")
+    assert stored["local_password_hash"] == effective

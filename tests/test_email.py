@@ -44,3 +44,26 @@ async def test_send_email_collapses_lone_cr_and_lf_too():
     sender = ConsoleEmailSender()
     await sender.send("me@example.com", "a\rb\nc\r\nd", "<b>test</b>")
     assert sender.sent[0]["subject"] == "a b c d"
+
+
+async def test_dynamic_sender_switches_backend_at_runtime(monkeypatch):
+    from switchgear.config import Settings
+    from switchgear.email import get_email_sender
+    from switchgear.email.sender import DynamicEmailSender
+
+    settings = Settings(_env_file=None, email_backend="console")
+    sender = get_email_sender(settings)
+    assert isinstance(sender, DynamicEmailSender)
+    await sender.send("a@b.c", "hi", "<p>x</p>")
+    assert sender.sent[0]["to"] == "a@b.c"
+
+    smtp_calls = []
+
+    async def fake_smtp_send(to, subject, html):
+        smtp_calls.append(to)
+
+    monkeypatch.setattr(sender.smtp, "send", fake_smtp_send)
+    settings.email_backend = "smtp"
+    await sender.send("d@e.f", "yo", "<p>y</p>")
+    assert smtp_calls == ["d@e.f"]
+    assert len(sender.sent) == 1

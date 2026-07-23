@@ -2,21 +2,12 @@
 
 import argparse
 import asyncio
-import base64
 import getpass
-import hashlib
 import json
-import os
 from pathlib import Path
 
+from switchgear.auth import hash_password
 from switchgear.storage.sqlite import SQLiteStorage
-
-
-def hash_password(password: str) -> str:
-    salt = os.urandom(16)
-    digest = hashlib.scrypt(password.encode(), salt=salt, n=2**14, r=8, p=1)
-    return "scrypt:16384:8:1:" + base64.urlsafe_b64encode(salt).decode() + ":" + \
-        base64.urlsafe_b64encode(digest).decode()
 
 
 async def import_json(source: Path, database: Path) -> int:

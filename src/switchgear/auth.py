@@ -1,6 +1,7 @@
 import base64
 import hashlib
 import hmac
+import os
 import secrets
 from urllib.parse import parse_qs
 
@@ -48,6 +49,13 @@ def verify_password(password: str, encoded: str) -> bool:
         return hmac.compare_digest(actual, base64.urlsafe_b64decode(expected))
     except (ValueError, TypeError):
         return False
+
+
+def hash_password(password: str) -> str:
+    salt = os.urandom(16)
+    digest = hashlib.scrypt(password.encode(), salt=salt, n=2**14, r=8, p=1)
+    return "scrypt:16384:8:1:" + base64.urlsafe_b64encode(salt).decode() + ":" + \
+        base64.urlsafe_b64encode(digest).decode()
 
 
 def login_csrf(settings: Settings) -> str:

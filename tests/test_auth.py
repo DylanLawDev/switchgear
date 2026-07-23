@@ -1,8 +1,14 @@
 import httpx
 from fastapi import Depends, FastAPI
 
-from switchgear.auth import login_csrf, require_owner, router, sign_session, verify_password
-from switchgear.cli import hash_password
+from switchgear.auth import (
+    hash_password,
+    login_csrf,
+    require_owner,
+    router,
+    sign_session,
+    verify_password,
+)
 from switchgear.config import Settings, get_settings
 
 S = Settings(_env_file=None, owner_email="owner@example.com", session_secret="s3")
@@ -68,3 +74,12 @@ async def test_local_login_requires_csrf_and_sets_session():
         )
     assert response.status_code == 303
     assert "session=" in response.headers["set-cookie"]
+
+
+def test_hash_password_round_trips_with_verify():
+    from switchgear.auth import hash_password as auth_hash_password
+
+    encoded = auth_hash_password("hunter22")
+    assert encoded.startswith("scrypt:16384:8:1:")
+    assert verify_password("hunter22", encoded)
+    assert not verify_password("wrong", encoded)

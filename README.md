@@ -9,18 +9,20 @@ volume. Google Cloud is optional.
 
 ## Five-minute local start
 
-Requirements: Docker with Compose and an OpenAI-compatible model gateway key.
+Requirements: Docker with Compose.
 
 ```sh
-cp .env.example .env
-openssl rand -hex 32                 # paste into SWITCHGEAR_SESSION_SECRET
-docker compose run --rm switchgear switchgear hash-password
-# paste the result into SWITCHGEAR_LOCAL_PASSWORD_HASH, then set the gateway key
-docker compose up -d
-curl --fail http://127.0.0.1:8080/healthz
+./scripts/setup.sh
 ```
 
-Open <http://127.0.0.1:8080>. Compose binds only to localhost. Data lives in the
+The script creates `.env`, generates a session secret, starts the container,
+and prints a one-time setup link. Open it to claim the instance (set your
+password and email) and connect an OpenAI-compatible model gateway — that's
+the whole setup. Configuration lives in the database from then on;
+environment variables remain supported as defaults (see
+[configuration](docs/configuration.md)).
+
+Compose binds only to localhost. Data lives in the
 `switchgear-data` volume at `/data`; the database is `/data/switchgear.sqlite3` and generated
 files remain below `/data`.
 
