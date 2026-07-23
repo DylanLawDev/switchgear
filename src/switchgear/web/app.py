@@ -37,6 +37,7 @@ from switchgear.prompts import system_prompt
 from switchgear.resume.pipeline import TailorPipeline
 from switchgear.storage import get_storage
 from switchgear.tools import build_registry
+from switchgear.tools.plan import format_plan, plan_key_var
 from switchgear.web.cron import require_cron
 from switchgear.web.deps import AppState
 from switchgear.web.spa import spa_index, spa_response
@@ -484,12 +485,17 @@ def create_app(settings: Settings | None = None, gateway=None, storage=None,
                     logger.warning(
                         "memory injection failed — proceeding without memory sections",
                         exc_info=True)
+                plan_doc = await state.storage.get("plans", conv_id)
                 fresh = system_prompt(auth.owner_identity(settings), skills=active,
-                                      core_memories=core, recalled=recalled)
+                                      core_memories=core, recalled=recalled,
+                                      plan=format_plan(plan_doc))
                 if history and history[0].get("role") == "system":
                     history[0] = {"role": "system", "content": fresh}
                 else:
                     history.insert(0, {"role": "system", "content": fresh})
+                # Task-local: the worker coroutine runs as its own asyncio task,
+                # so the key never leaks across conversations.
+                plan_key_var.set(conv_id)
                 loop = AgentLoop(state.gateway, state.registry, settings)
                 async for event in loop.run(history):
                     kind = event["type"]

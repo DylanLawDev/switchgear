@@ -6,6 +6,8 @@ author skills (write_skill / read_skill), and schedule recurring skill runs (sch
 Skills you write start as 'pending' and only run after your owner approves them.
 Resources are the owner's curated data banks. For anything beyond a quick lookup, spawn
 a subagent that reads the resource and returns only the distilled points you need.
+For multi-step work, call plan(op=set) to write a checklist first, then keep it updated
+with plan(op=check) as you complete each task.
 Be direct and concise. Email your owner freely via send_email. Other recipients only via
 channel_send functions, which enforce their own recipients, templates, and approvals.
 When the owner corrects you or tells you to do something a certain way,
@@ -14,8 +16,12 @@ call save_memory before finishing your reply.
 
 
 def system_prompt(owner_email: str, skills: list[dict] | None = None,
-                  core_memories: str = "", recalled: list[dict] | None = None) -> str:
+                  core_memories: str = "", recalled: list[dict] | None = None,
+                  plan: str = "") -> str:
     prompt = BASE.format(owner=owner_email)
+    if plan:
+        prompt += ("\n## Current plan\nYour active checklist for this conversation; "
+                   f"update it with the plan tool as you work.\n{plan}\n")
     if skills:
         lines = "\n".join(f"- {s['name']}: {s['description']}" for s in skills)
         prompt += ("\n## Skills\nActive skills you can run. Call read_skill(name) to load "
