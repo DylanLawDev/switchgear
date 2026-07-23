@@ -224,9 +224,12 @@ def create_app(settings: Settings | None = None, gateway=None, storage=None,
             load_secure_overrides,
             load_settings_overrides,
         )
+        from switchgear.web.setup_routes import announce_setup, ensure_session_secret
 
         await load_settings_overrides(state)
         await load_secure_overrides(state)
+        await ensure_session_secret(state)
+        await announce_setup(state)
         await state.skill_store.seed_dir(settings.skills_dir)
         await state.agent_profiles.seed_dir(settings.agents_dir)
         await state.workflow_store.seed_dir(settings.workflows_dir)
@@ -397,6 +400,8 @@ def create_app(settings: Settings | None = None, gateway=None, storage=None,
 
     @app.get("/login", response_class=HTMLResponse)
     async def login_page(request: Request):
+        if not state.settings.local_password_hash:
+            return RedirectResponse("/setup", status_code=307)
         if auth.verify_session(settings, request.cookies.get("session")):
             return RedirectResponse("/", status_code=307)
         csrf = auth.login_csrf(settings)
@@ -638,5 +643,9 @@ def create_app(settings: Settings | None = None, gateway=None, storage=None,
     from switchgear.web.settings_routes import register_settings_routes
 
     register_settings_routes(app, state)
+
+    from switchgear.web.setup_routes import register_setup_routes
+
+    register_setup_routes(app, state)
 
     return app
