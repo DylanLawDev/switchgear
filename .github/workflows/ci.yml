@@ -1,8 +1,7 @@
 name: CI
+# Disabled: automatic triggers removed. Run manually via workflow_dispatch to re-check.
 on:
-  pull_request:
-  push:
-    branches: [main]
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:

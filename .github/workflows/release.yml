@@ -1,7 +1,7 @@
 name: Release images
+# Disabled: automatic triggers removed. Run manually via workflow_dispatch to re-check.
 on:
-  push:
-    tags: ["v*.*.*"]
+  workflow_dispatch:
 permissions:
   contents: write
   packages: write
