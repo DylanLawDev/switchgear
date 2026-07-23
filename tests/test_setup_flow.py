@@ -53,16 +53,15 @@ async def test_claim_happy_path_sets_cookie_and_deletes_token():
     async with client(app) as c:
         response = await c.post("/api/setup/claim", json={
             "token": token, "password": "hunter22-long",
-            "owner_email": "me@example.com", "owner_timezone": "America/New_York"})
+            "nickname": "dyl", "owner_timezone": "America/New_York"})
     assert response.status_code == 200
     assert is_claimed(state.settings)
-    assert state.settings.owner_email == "me@example.com"
+    assert state.settings.owner_nickname == "dyl"
     assert state.settings.owner_timezone == "America/New_York"
-    assert verify_session(state.settings, response.cookies.get("session")) \
-        == "me@example.com"
+    assert verify_session(state.settings, response.cookies.get("session")) == "dyl"
     assert await storage.get("app-settings", "setup-token") is None
     secure = await storage.get("app-settings", "secure")
-    assert secure["owner_email"] == "me@example.com"
+    assert secure["owner_nickname"] == "dyl"
     assert (await storage.get("app-settings", "user"))["owner_timezone"] \
         == "America/New_York"
 
@@ -78,11 +77,10 @@ async def test_claim_rejects_bad_token_and_short_password(monkeypatch):
     token = await ensure_setup_token(app.state.switchgear)
     async with client(app) as c:
         bad = await c.post("/api/setup/claim", json={
-            "token": "wrong", "password": "hunter22-long",
-            "owner_email": "me@example.com"})
+            "token": "wrong", "password": "hunter22-long", "nickname": "dyl"})
         assert bad.status_code == 403
         short = await c.post("/api/setup/claim", json={
-            "token": token, "password": "short", "owner_email": "me@example.com"})
+            "token": token, "password": "short", "nickname": "dyl"})
         assert short.status_code == 422
 
 
@@ -91,8 +89,7 @@ async def test_claim_conflicts_when_already_claimed():
                              owner_email="own@x.y")
     async with client(app) as c:
         response = await c.post("/api/setup/claim", json={
-            "token": "any", "password": "hunter22-long",
-            "owner_email": "me@example.com"})
+            "token": "any", "password": "hunter22-long", "nickname": "dyl"})
     assert response.status_code == 409
 
 

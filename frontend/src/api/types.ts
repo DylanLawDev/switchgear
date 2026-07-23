@@ -176,7 +176,7 @@ export interface ReferenceSuggestion {
 
 // ---- user settings (settings_routes.py) ----
 export interface UserSettings {
-  owner_email: string;
+  owner: string;
   gateway_base_url: string;
   owner_timezone: string;
   email_backend: "console" | "smtp";
@@ -207,7 +207,7 @@ export interface UserSettings {
 }
 
 export type UserSettingsUpdate =
-  Omit<UserSettings, "owner_email" | "gateway_api_key_set" | "smtp_password_set"> & {
+  Omit<UserSettings, "owner" | "gateway_api_key_set" | "smtp_password_set"> & {
     gateway_api_key?: string;
     smtp_password?: string;
   };
@@ -226,6 +226,6 @@ export interface GatewayTestResult {
 export interface ClaimRequest {
   token: string;
   password: string;
-  owner_email: string;
+  nickname: string;
   owner_timezone?: string;
 }

@@ -16,11 +16,12 @@ Requirements: Docker with Compose.
 ```
 
 The script creates `.env`, generates a session secret, starts the container,
-and prints a one-time setup link. Open it to claim the instance (set your
-password and email) and connect an OpenAI-compatible model gateway — that's
+and prints a one-time setup link. Open it to claim the instance (pick a
+nickname and password — no email needed) and connect an OpenAI-compatible model gateway — that's
 the whole setup. Configuration lives in the database from then on;
 environment variables remain supported as defaults (see
-[configuration](docs/configuration.md)).
+[configuration](docs/configuration.md)). Private, instance-specific skills and
+workflows belong in the gitignored `user/` directory, seeded on boot.
 
 Compose binds only to localhost. Data lives in the
 `switchgear-data` volume at `/data`; the database is `/data/switchgear.sqlite3` and generated

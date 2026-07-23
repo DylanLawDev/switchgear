@@ -6,7 +6,7 @@ import { renderWithProviders } from "../test/utils";
 import SetupPage from "./SetupPage";
 
 const settings = {
-  owner_email: "me@example.com",
+  owner: "me@example.com",
   gateway_base_url: "https://openrouter.ai/api/v1",
   owner_timezone: "Etc/UTC",
   email_backend: "console",
@@ -41,7 +41,7 @@ function mockUnclaimed() {
     HttpResponse.json({ claimed: false })));
 }
 
-test("claim step submits token, email, and password", async () => {
+test("claim step submits token, nickname, and password", async () => {
   mockUnclaimed();
   let claimBody: unknown;
   server.use(
@@ -56,14 +56,14 @@ test("claim step submits token, email, and password", async () => {
   const user = userEvent.setup();
   await screen.findByText(/claim this instance/i);
   expect(screen.getByLabelText("Setup token")).toHaveValue("tok-from-url");
-  await user.type(screen.getByLabelText("Email"), "me@example.com");
+  await user.type(screen.getByLabelText("Nickname"), "dyl");
   await user.type(screen.getByLabelText("Password"), "hunter22-long");
   await user.type(screen.getByLabelText("Confirm password"), "hunter22-long");
   await user.click(screen.getByRole("button", { name: /claim/i }));
 
   await screen.findByText(/model gateway/i);
   expect(claimBody).toMatchObject({
-    token: "tok-from-url", owner_email: "me@example.com",
+    token: "tok-from-url", nickname: "dyl",
     password: "hunter22-long",
   });
 });
@@ -74,7 +74,7 @@ test("mismatched passwords block submission", async () => {
   const user = userEvent.setup();
   await screen.findByText(/claim this instance/i);
   await user.type(screen.getByLabelText("Setup token"), "t");
-  await user.type(screen.getByLabelText("Email"), "me@example.com");
+  await user.type(screen.getByLabelText("Nickname"), "dyl");
   await user.type(screen.getByLabelText("Password"), "hunter22-long");
   await user.type(screen.getByLabelText("Confirm password"), "different-pass");
   await user.click(screen.getByRole("button", { name: /claim/i }));
@@ -94,7 +94,7 @@ test("gateway step tests connection and finishes", async () => {
   renderWithProviders(<SetupPage />, { route: "/setup?token=t" });
   const user = userEvent.setup();
   await screen.findByText(/claim this instance/i);
-  await user.type(screen.getByLabelText("Email"), "me@example.com");
+  await user.type(screen.getByLabelText("Nickname"), "dyl");
   await user.type(screen.getByLabelText("Password"), "hunter22-long");
   await user.type(screen.getByLabelText("Confirm password"), "hunter22-long");
   await user.click(screen.getByRole("button", { name: /claim/i }));
@@ -105,4 +105,49 @@ test("gateway step tests connection and finishes", async () => {
   await screen.findByText(/connected — 42 models/i);
   await user.click(screen.getByRole("button", { name: /save and finish/i }));
   await screen.findByText(/you're all set/i);
+});
+
+test("gateway step offers budget model dropdown and saves the pick", async () => {
+  mockUnclaimed();
+  let saved: Record<string, unknown> | undefined;
+  server.use(
+    http.post("/api/setup/claim", () => HttpResponse.json({ ok: true })),
+    http.get("/api/settings", () => HttpResponse.json(settings)),
+    http.put("/api/settings", async ({ request }) => {
+      saved = (await request.json()) as Record<string, unknown>;
+      return HttpResponse.json({ ...settings, ...saved });
+    }),
+  );
+  renderWithProviders(<SetupPage />, { route: "/setup?token=t" });
+  const user = userEvent.setup();
+  await screen.findByText(/claim this instance/i);
+  await user.type(screen.getByLabelText("Nickname"), "dyl");
+  await user.type(screen.getByLabelText("Password"), "hunter22-long");
+  await user.type(screen.getByLabelText("Confirm password"), "hunter22-long");
+  await user.click(screen.getByRole("button", { name: /claim/i }));
+
+  const modelSelect = await screen.findByLabelText("Chat model");
+  await user.selectOptions(modelSelect, "deepseek/deepseek-v4-flash");
+  await user.click(screen.getByRole("button", { name: /save and finish/i }));
+  await screen.findByText(/you're all set/i);
+  expect(saved?.model_chat).toBe("deepseek/deepseek-v4-flash");
+});
+
+test("custom model option reveals a free-text input", async () => {
+  mockUnclaimed();
+  server.use(
+    http.post("/api/setup/claim", () => HttpResponse.json({ ok: true })),
+    http.get("/api/settings", () => HttpResponse.json(settings)),
+  );
+  renderWithProviders(<SetupPage />, { route: "/setup?token=t" });
+  const user = userEvent.setup();
+  await screen.findByText(/claim this instance/i);
+  await user.type(screen.getByLabelText("Nickname"), "dyl");
+  await user.type(screen.getByLabelText("Password"), "hunter22-long");
+  await user.type(screen.getByLabelText("Confirm password"), "hunter22-long");
+  await user.click(screen.getByRole("button", { name: /claim/i }));
+
+  const modelSelect = await screen.findByLabelText("Chat model");
+  await user.selectOptions(modelSelect, "__custom__");
+  expect(screen.getByLabelText("Custom model")).toBeInTheDocument();
 });

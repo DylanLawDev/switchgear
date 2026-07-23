@@ -42,7 +42,7 @@ class SkillStore:
         await self._db.put(COLLECTION, name, doc)
         return doc
 
-    async def seed_dir(self, path: str) -> int:
+    async def seed_dir(self, path: str, *, source: str = "repo") -> int:
         root = Path(path)
         if not root.exists():
             return 0
@@ -53,6 +53,6 @@ class SkillStore:
                 text = skill_file.read_text()
                 name = parse_skill(text)["name"]
                 if await self.get(name) is None:
-                    await self.save(text, source="repo")
+                    await self.save(text, source=source)
                     count += 1
         return count

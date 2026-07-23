@@ -121,3 +121,29 @@
   .rail { display: none; }
   .msg { max-width: 90%; }
 }
+
+.planCard {
+  align-self: flex-start;
+  max-width: 80%;
+  padding: var(--space-3) var(--space-4);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+}
+
+.planTasks {
+  list-style: none;
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.planTask { display: flex; gap: var(--space-2); align-items: baseline; }
+.planTask[data-status="done"] { color: var(--text-dim); }
+.planTask[data-status="done"] .planGlyph { color: var(--ok); }
+.planTask[data-status="in_progress"] .planGlyph { color: var(--accent, currentColor); }
+.planTask[data-status="skipped"] { color: var(--text-dim); text-decoration: line-through; }
+.planGlyph { font-family: var(--mono); }

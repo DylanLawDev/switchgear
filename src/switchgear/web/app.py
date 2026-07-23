@@ -37,6 +37,7 @@ from switchgear.prompts import system_prompt
 from switchgear.resume.pipeline import TailorPipeline
 from switchgear.storage import get_storage
 from switchgear.tools import build_registry
+from switchgear.tools.plan import format_plan, plan_key_var
 from switchgear.web.cron import require_cron
 from switchgear.web.deps import AppState
 from switchgear.web.spa import spa_index, spa_response
@@ -230,9 +231,13 @@ def create_app(settings: Settings | None = None, gateway=None, storage=None,
         await load_secure_overrides(state)
         await ensure_session_secret(state)
         await announce_setup(state)
+        user_root = Path(settings.user_dir)
         await state.skill_store.seed_dir(settings.skills_dir)
+        await state.skill_store.seed_dir(str(user_root / "skills"), source="owner")
         await state.agent_profiles.seed_dir(settings.agents_dir)
+        await state.agent_profiles.seed_dir(str(user_root / "agents"), source="owner")
         await state.workflow_store.seed_dir(settings.workflows_dir)
+        await state.workflow_store.seed_dir(str(user_root / "workflows"), source="owner")
         # One-release compatibility migration: old skill cron metadata/jobs become
         # workflow schedules when exactly one workflow names that skill as intake.
         legacy_jobs = {row["skill"]: row for row in await state.scheduler.list()
@@ -260,6 +265,7 @@ def create_app(settings: Settings | None = None, gateway=None, storage=None,
         for workflow in await state.workflow_store.active_definitions():
             await state.workflow_store.purge_expired_items(workflow)
         await state.resource_store.seed_dir(settings.resources_dir)
+        await state.resource_store.seed_dir(str(user_root / "resources"))
 
         from switchgear.channels.ingest import ChannelIngest
         from switchgear.channels.transport import get_transport
@@ -278,6 +284,7 @@ def create_app(settings: Settings | None = None, gateway=None, storage=None,
             schedule_tick_task = asyncio.create_task(_schedule_tick())
 
         await state.channel_store.seed_dir(settings.channels_dir)
+        await state.channel_store.seed_dir(str(user_root / "channels"), source="owner")
         scheduled_docs = await state.scheduler.list()
         scheduled = {s["skill"] for s in scheduled_docs}
         scheduled_by_skill = {s["skill"]: s for s in scheduled_docs}
@@ -478,12 +485,17 @@ def create_app(settings: Settings | None = None, gateway=None, storage=None,
                     logger.warning(
                         "memory injection failed — proceeding without memory sections",
                         exc_info=True)
-                fresh = system_prompt(settings.owner_email, skills=active,
-                                      core_memories=core, recalled=recalled)
+                plan_doc = await state.storage.get("plans", conv_id)
+                fresh = system_prompt(auth.owner_identity(settings), skills=active,
+                                      core_memories=core, recalled=recalled,
+                                      plan=format_plan(plan_doc))
                 if history and history[0].get("role") == "system":
                     history[0] = {"role": "system", "content": fresh}
                 else:
                     history.insert(0, {"role": "system", "content": fresh})
+                # Task-local: the worker coroutine runs as its own asyncio task,
+                # so the key never leaks across conversations.
+                plan_key_var.set(conv_id)
                 loop = AgentLoop(state.gateway, state.registry, settings)
                 async for event in loop.run(history):
                     kind = event["type"]

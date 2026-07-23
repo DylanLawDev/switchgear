@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     model_bulk: str = "google/gemini-2.5-flash"
     model_writing: str = "anthropic/claude-sonnet-4.5"
     owner_email: str = ""
+    owner_nickname: str = ""
     session_secret: str = "dev-secret-change-me"
     storage_backend: Literal["sqlite", "memory", "firestore"] = "sqlite"
     email_backend: Literal["console", "smtp"] = "console"
@@ -43,6 +44,8 @@ class Settings(BaseSettings):
     skills_dir: str = "skills"
     workflows_dir: str = "workflows"
     agents_dir: str = "agents"
+    # Tenant-owned definitions seeded alongside the system dirs; gitignored.
+    user_dir: str = "user"
     scheduler_backend: Literal["local", "cloud"] = "local"
     task_queue: str = "switchgear-workflows"
     owner_timezone: str = "Etc/UTC"

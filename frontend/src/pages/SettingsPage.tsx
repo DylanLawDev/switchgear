@@ -8,10 +8,11 @@ import {
   useUserSettings,
 } from "../api/queries/settings";
 import { UserSettings } from "../api/types";
+import { MODEL_SUGGESTIONS } from "../lib/models";
 import styles from "./SettingsPage.module.css";
 
 type EditableSettings =
-  Omit<UserSettings, "owner_email" | "gateway_api_key_set" | "smtp_password_set">;
+  Omit<UserSettings, "owner" | "gateway_api_key_set" | "smtp_password_set">;
 type SettingKey = keyof EditableSettings;
 
 interface FieldSpec {
@@ -20,15 +21,16 @@ interface FieldSpec {
   help: string;
   type?: "text" | "number";
   step?: string;
+  list?: string;
 }
 
 const GROUPS: { title: string; fields: FieldSpec[] }[] = [
   {
     title: "models",
     fields: [
-      { key: "model_chat", label: "Chat model", help: "Interactive conversations and tool use." },
-      { key: "model_bulk", label: "Bulk model", help: "Background scoring and high-volume tasks." },
-      { key: "model_writing", label: "Writing model", help: "Briefs, drafts, and polished content." },
+      { key: "model_chat", label: "Chat model", help: "Interactive conversations and tool use.", list: "model-suggestions" },
+      { key: "model_bulk", label: "Bulk model", help: "Background scoring and high-volume tasks.", list: "model-suggestions" },
+      { key: "model_writing", label: "Writing model", help: "Briefs, drafts, and polished content.", list: "model-suggestions" },
     ],
   },
   {
@@ -73,7 +75,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (data) {
-      const { owner_email: _ownerEmail, gateway_api_key_set: _keySet,
+      const { owner: _owner, gateway_api_key_set: _keySet,
               smtp_password_set: _pwSet, ...editable } = data;
       setDraft(editable);
     }
@@ -156,6 +158,7 @@ export default function SettingsPage() {
                     aria-label={field.label}
                     type={field.type ?? "text"}
                     step={field.step}
+                    list={field.list}
                     value={String(draft[field.key])}
                     onChange={(event) => updateField(field, event.target.value)}
                   />
@@ -164,6 +167,9 @@ export default function SettingsPage() {
             </div>
           </section>
         ))}
+        <datalist id="model-suggestions">
+          {MODEL_SUGGESTIONS.map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+        </datalist>
         <section className={styles.section}>
           <h2>email</h2>
           <div className={styles.grid}>
@@ -233,7 +239,7 @@ export default function SettingsPage() {
       <section className={`${styles.section} ${styles.account}`}>
         <div className={styles.accountMeta}>
           <strong>Account</strong>
-          {data.owner_email}
+          {data.owner}
         </div>
         <Button variant="danger" onClick={() => logout.mutate()} disabled={logout.isPending}>Log out</Button>
         {logout.error && <span className={styles.error}>{logout.error.message}</span>}

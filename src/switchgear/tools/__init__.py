@@ -5,6 +5,7 @@ from switchgear.tools.base import ToolRegistry
 from switchgear.tools.fetch_jobs import make_fetch_jobs_tool
 from switchgear.tools.http_fetch import make_http_fetch_tool
 from switchgear.tools.llm_tool import make_llm_tool
+from switchgear.tools.plan import make_plan_tool
 from switchgear.tools.score_jobs import make_score_jobs_tool
 from switchgear.tools.storage_tool import make_storage_tool
 
@@ -19,6 +20,7 @@ def build_registry(settings: Settings, storage: Storage, gateway: Gateway,
     reg.register(make_http_fetch_tool())
     reg.register(make_storage_tool(storage))
     reg.register(make_llm_tool(gateway))
+    reg.register(make_plan_tool(storage))
     reg.register(make_fetch_jobs_tool(settings, storage))
     reg.register(make_score_jobs_tool(settings, storage, gateway))
     if email_sender is not None:

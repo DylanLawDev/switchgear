@@ -68,7 +68,7 @@ def current_user_settings(settings) -> dict:
 
 
 SECURE_SETTING_NAMES = ("gateway_api_key", "smtp_password", "local_password_hash",
-                        "owner_email", "session_secret")
+                        "owner_nickname", "session_secret")
 
 
 def secret_presence(settings) -> dict:
@@ -121,7 +121,7 @@ def register_settings_routes(app, state) -> None:
 
     @app.get("/api/settings")
     async def get_user_settings(email: str = Depends(auth.require_owner)):
-        return {**current_user_settings(state.settings), "owner_email": email,
+        return {**current_user_settings(state.settings), "owner": email,
                 **secret_presence(state.settings)}
 
     @app.put("/api/settings")
@@ -140,7 +140,7 @@ def register_settings_routes(app, state) -> None:
             await state.storage.put(SETTINGS_COLLECTION, SECURE_KEY, stored)
             for name, value in updates.items():
                 setattr(state.settings, name, value)
-        return {**values, "owner_email": email, **secret_presence(state.settings)}
+        return {**values, "owner": email, **secret_presence(state.settings)}
 
     @app.post("/api/settings/test-gateway")
     async def test_gateway(body: GatewayTestRequest,

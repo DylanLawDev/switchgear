@@ -45,7 +45,7 @@ class AgentProfileStore:
         await self._db.delete(COLLECTION, name)
         return True
 
-    async def seed_dir(self, root: str) -> int:
+    async def seed_dir(self, root: str, *, source: str = "repo") -> int:
         path = Path(root)
         if not path.exists():
             return 0
@@ -60,7 +60,7 @@ class AgentProfileStore:
                 logger.warning("skipping agent profile %s: %s", file, exc)
                 continue
             if await self.get(parsed["name"]) is None:
-                await self.save(file.read_text(), source="repo")
+                await self.save(file.read_text(), source=source)
                 count += 1
         return count
 

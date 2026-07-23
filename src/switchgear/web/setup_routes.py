@@ -61,7 +61,7 @@ class ClaimRequest(BaseModel):
 
     token: str = Field(min_length=1, max_length=500)
     password: str = Field(min_length=8, max_length=200)
-    owner_email: str = Field(min_length=3, max_length=200, pattern=r".+@.+")
+    nickname: str = Field(min_length=1, max_length=80, pattern=r"\S")
     owner_timezone: str = Field(default="", max_length=100)
 
 
@@ -93,13 +93,14 @@ def register_setup_routes(app, state) -> None:
                 ZoneInfo(body.owner_timezone)
             except Exception:
                 raise HTTPException(400, "unknown timezone") from None
+        nickname = body.nickname.strip()
         stored = await state.storage.get(SETTINGS_COLLECTION, SECURE_KEY) or {}
         stored["local_password_hash"] = auth.hash_password(body.password)
-        stored["owner_email"] = body.owner_email
+        stored["owner_nickname"] = nickname
         await state.storage.put(SETTINGS_COLLECTION, SECURE_KEY, stored)
         await state.storage.delete(SETTINGS_COLLECTION, SETUP_TOKEN_KEY)
         state.settings.local_password_hash = stored["local_password_hash"]
-        state.settings.owner_email = body.owner_email
+        state.settings.owner_nickname = nickname
         if body.owner_timezone:
             user = await state.storage.get(SETTINGS_COLLECTION, SETTINGS_KEY) or {}
             user["owner_timezone"] = body.owner_timezone
@@ -107,7 +108,7 @@ def register_setup_routes(app, state) -> None:
             state.settings.owner_timezone = body.owner_timezone
         response = JSONResponse({"ok": True})
         response.set_cookie("session",
-                            auth.sign_session(state.settings, body.owner_email),
+                            auth.sign_session(state.settings, nickname),
                             httponly=True, secure=state.settings.cookie_secure,
                             samesite=state.settings.cookie_samesite,
                             max_age=auth.SESSION_MAX_AGE)

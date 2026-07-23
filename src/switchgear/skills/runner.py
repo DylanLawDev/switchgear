@@ -2,6 +2,7 @@ import logging
 import time
 from uuid import uuid4
 
+from switchgear.auth import owner_identity
 from switchgear.loop import AgentLoop
 
 logger = logging.getLogger(__name__)
@@ -49,7 +50,7 @@ class SkillRunner:
 
         messages = [
             {"role": "system",
-             "content": runner_prompt(self._s.owner_email, skill, core_memories=core)},
+             "content": runner_prompt(owner_identity(self._s), skill, core_memories=core)},
             {"role": "user", "content": f"Execute the '{name}' skill now."},
         ]
         loop = AgentLoop(self._gw, self._reg, self._s)

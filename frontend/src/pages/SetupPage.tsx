@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import Button from "../components/Button";
 import { useClaim, useSetupStatus } from "../api/queries/setup";
 import { useSaveUserSettings, useTestGateway, useUserSettings } from "../api/queries/settings";
+import { CUSTOM_MODEL, MODEL_SUGGESTIONS } from "../lib/models";
 import styles from "./SetupPage.module.css";
 
 type Step = "claim" | "gateway" | "done";
@@ -40,7 +41,7 @@ function ClaimStep({ onDone }: { onDone: () => void }) {
   const [params] = useSearchParams();
   const claim = useClaim();
   const [token, setToken] = useState(params.get("token") ?? "");
-  const [email, setEmail] = useState("");
+  const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [localError, setLocalError] = useState("");
@@ -53,7 +54,7 @@ function ClaimStep({ onDone }: { onDone: () => void }) {
     }
     setLocalError("");
     claim.mutate(
-      { token, password, owner_email: email,
+      { token, password, nickname,
         owner_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone },
       { onSuccess: onDone },
     );
@@ -70,9 +71,10 @@ function ClaimStep({ onDone }: { onDone: () => void }) {
                onChange={(e) => setToken(e.target.value)} required />
       </label>
       <label className={styles.field}>
-        <span>Email</span>
-        <input aria-label="Email" type="email" value={email}
-               onChange={(e) => setEmail(e.target.value)} required />
+        <span>Nickname</span>
+        <small>How the agent should address you. No email needed.</small>
+        <input aria-label="Nickname" value={nickname}
+               onChange={(e) => setNickname(e.target.value)} required />
       </label>
       <label className={styles.field}>
         <span>Password</span>
@@ -101,14 +103,16 @@ function GatewayStep({ onDone }: { onDone: () => void }) {
   const [baseUrl, setBaseUrl] = useState<string | null>(null);
   const [apiKey, setApiKey] = useState("");
   const [model, setModel] = useState<string | null>(null);
+  const [customMode, setCustomMode] = useState(false);
 
   if (!data) return <div className="dim">loading…</div>;
   const effectiveBase = baseUrl ?? data.gateway_base_url;
   const effectiveModel = model ?? data.model_chat;
+  const inList = MODEL_SUGGESTIONS.some((m) => m.id === effectiveModel);
 
   function submit(event: FormEvent) {
     event.preventDefault();
-    const { owner_email: _e, gateway_api_key_set: _g, smtp_password_set: _s,
+    const { owner: _o, gateway_api_key_set: _g, smtp_password_set: _s,
             ...editable } = data!;
     save.mutate(
       { ...editable, gateway_base_url: effectiveBase, model_chat: effectiveModel,
@@ -134,9 +138,34 @@ function GatewayStep({ onDone }: { onDone: () => void }) {
       </label>
       <label className={styles.field}>
         <span>Chat model</span>
-        <input aria-label="Chat model" value={effectiveModel}
-               onChange={(e) => setModel(e.target.value)} required />
+        <small>Popular budget-friendly picks; prices are per million tokens.</small>
+        <select aria-label="Chat model"
+                value={customMode ? CUSTOM_MODEL : effectiveModel}
+                onChange={(e) => {
+                  if (e.target.value === CUSTOM_MODEL) {
+                    setCustomMode(true);
+                  } else {
+                    setCustomMode(false);
+                    setModel(e.target.value);
+                  }
+                }}>
+          {!inList && !customMode && (
+            <option value={effectiveModel}>{effectiveModel} (current)</option>
+          )}
+          {MODEL_SUGGESTIONS.map((m) => (
+            <option key={m.id} value={m.id}>{m.label}</option>
+          ))}
+          <option value={CUSTOM_MODEL}>Custom model…</option>
+        </select>
       </label>
+      {customMode && (
+        <label className={styles.field}>
+          <span>Custom model</span>
+          <small>Any model slug your gateway serves.</small>
+          <input aria-label="Custom model" value={model ?? ""}
+                 onChange={(e) => setModel(e.target.value)} required />
+        </label>
+      )}
       <div className={styles.actions}>
         <Button onClick={() => test.mutate({ gateway_base_url: effectiveBase,
                                              gateway_api_key: apiKey })}

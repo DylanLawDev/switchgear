@@ -30,7 +30,7 @@ async def test_settings_get_exposes_safe_user_fields_only():
         response = await c.get("/api/settings")
     assert response.status_code == 200
     body = response.json()
-    assert body["owner_email"] == OWNER
+    assert body["owner"] == OWNER
     assert body["model_chat"] == app.state.switchgear.settings.model_chat
     assert "gateway_api_key" not in body
     assert "session_secret" not in body
@@ -42,7 +42,7 @@ async def test_settings_put_persists_and_applies_immediately():
     async with client(app) as c:
         current = (await c.get("/api/settings")).json()
         current = {k: v for k, v in current.items()
-                   if k not in {"owner_email", "gateway_api_key_set", "smtp_password_set"}}
+                   if k not in {"owner", "gateway_api_key_set", "smtp_password_set"}}
         current.update({"model_chat": "new/chat", "memory_recall_k": 9})
         response = await c.put("/api/settings", json=current)
     assert response.status_code == 200
@@ -50,14 +50,14 @@ async def test_settings_put_persists_and_applies_immediately():
     assert app.state.switchgear.settings.memory_recall_k == 9
     stored = await storage.get("app-settings", "user")
     assert stored["model_chat"] == "new/chat"
-    assert "owner_email" not in stored
+    assert "owner" not in stored
 
 
 async def test_settings_put_validates_bounds():
     app = make_app()
     async with client(app) as c:
         body = (await c.get("/api/settings")).json()
-        body.pop("owner_email")
+        body.pop("owner")
         body["memory_recall_floor"] = 2
         response = await c.put("/api/settings", json=body)
     assert response.status_code == 422
@@ -99,7 +99,7 @@ async def test_settings_put_smtp_requires_host_and_from():
     async with client(app) as c:
         current = (await c.get("/api/settings")).json()
         current = {k: v for k, v in current.items()
-                   if k not in {"owner_email", "gateway_api_key_set", "smtp_password_set"}}
+                   if k not in {"owner", "gateway_api_key_set", "smtp_password_set"}}
         current.update({"email_backend": "smtp", "smtp_host": "", "smtp_from": ""})
         response = await c.put("/api/settings", json=current)
     assert response.status_code == 422
@@ -110,7 +110,7 @@ async def test_settings_put_rejects_unknown_timezone():
     async with client(app) as c:
         current = (await c.get("/api/settings")).json()
         current = {k: v for k, v in current.items()
-                   if k not in {"owner_email", "gateway_api_key_set", "smtp_password_set"}}
+                   if k not in {"owner", "gateway_api_key_set", "smtp_password_set"}}
         current["owner_timezone"] = "Mars/Olympus"
         response = await c.put("/api/settings", json=current)
     assert response.status_code == 422
@@ -122,7 +122,7 @@ async def test_settings_put_applies_gateway_base_url():
     async with client(app) as c:
         current = (await c.get("/api/settings")).json()
         current = {k: v for k, v in current.items()
-                   if k not in {"owner_email", "gateway_api_key_set", "smtp_password_set"}}
+                   if k not in {"owner", "gateway_api_key_set", "smtp_password_set"}}
         current["gateway_base_url"] = "https://gw.example/v1"
         response = await c.put("/api/settings", json=current)
     assert response.status_code == 200
@@ -138,7 +138,7 @@ async def test_secrets_are_write_only_and_presence_reported():
         body = (await c.get("/api/settings")).json()
         assert body["gateway_api_key_set"] is False
         payload = {k: v for k, v in body.items()
-                   if k not in {"owner_email", "gateway_api_key_set", "smtp_password_set"}}
+                   if k not in {"owner", "gateway_api_key_set", "smtp_password_set"}}
         payload["gateway_api_key"] = "sk-secret-123"
         response = await c.put("/api/settings", json=payload)
         assert response.status_code == 200
@@ -157,7 +157,7 @@ async def test_put_with_empty_secret_keeps_existing():
     async with client(app) as c:
         body = (await c.get("/api/settings")).json()
         payload = {k: v for k, v in body.items()
-                   if k not in {"owner_email", "gateway_api_key_set", "smtp_password_set"}}
+                   if k not in {"owner", "gateway_api_key_set", "smtp_password_set"}}
         payload["gateway_api_key"] = "sk-first"
         await c.put("/api/settings", json=payload)
         payload["gateway_api_key"] = ""
@@ -171,7 +171,7 @@ async def test_secure_overrides_loaded_from_storage():
     storage = MemoryStorage()
     await storage.put("app-settings", "secure",
                       {"gateway_api_key": "sk-db", "smtp_password": "",
-                       "local_password_hash": "scrypt:x", "owner_email": "db@x.y"})
+                       "local_password_hash": "scrypt:x", "owner_nickname": "db-owner"})
     app = make_app(storage)
     state = app.state.switchgear
     state.settings.smtp_password = "env-value"
@@ -179,7 +179,7 @@ async def test_secure_overrides_loaded_from_storage():
     assert state.settings.gateway_api_key == "sk-db"
     assert state.settings.smtp_password == "env-value"  # empty DB value skipped
     assert state.settings.local_password_hash == "scrypt:x"
-    assert state.settings.owner_email == "db@x.y"
+    assert state.settings.owner_nickname == "db-owner"
 
 
 
