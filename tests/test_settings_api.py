@@ -232,3 +232,29 @@ async def test_gateway_test_reports_connection_error():
                                 json={"gateway_base_url": "https://down.test/v1",
                                       "gateway_api_key": "k"})
     assert response.json() == {"ok": False, "detail": "connection failed: ConnectError"}
+
+
+async def test_password_change_verifies_current_and_persists():
+    from switchgear.auth import hash_password, verify_password
+
+    storage = MemoryStorage()
+    settings = Settings(_env_file=None, owner_email=OWNER, session_secret="s3",
+                        local_password_hash=hash_password("old-password"))
+    app = create_app(settings=settings, storage=storage, gateway=FakeGateway([]))
+    async with client(app) as c:
+        bad = await c.post("/api/settings/password",
+                           json={"current_password": "nope",
+                                 "new_password": "new-password-1"})
+        assert bad.status_code == 403
+        short = await c.post("/api/settings/password",
+                             json={"current_password": "old-password",
+                                   "new_password": "short"})
+        assert short.status_code == 422
+        good = await c.post("/api/settings/password",
+                            json={"current_password": "old-password",
+                                  "new_password": "new-password-1"})
+    assert good.status_code == 200
+    effective = app.state.switchgear.settings.local_password_hash
+    assert verify_password("new-password-1", effective)
+    stored = await storage.get("app-settings", "secure")
+    assert stored["local_password_hash"] == effective

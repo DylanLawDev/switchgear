@@ -2,7 +2,7 @@ from typing import Literal
 from zoneinfo import ZoneInfo
 
 import httpx
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -105,6 +105,13 @@ class GatewayTestRequest(BaseModel):
     gateway_api_key: str = ""
 
 
+class PasswordChangeRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    current_password: str = Field(min_length=1, max_length=200)
+    new_password: str = Field(min_length=8, max_length=200)
+
+
 def register_settings_routes(app, state) -> None:
     @app.get("/settings")
     async def settings_page(email: str = Depends(auth.require_owner)):
@@ -155,3 +162,16 @@ def register_settings_routes(app, state) -> None:
         except ValueError:
             count = 0
         return {"ok": True, "models": count}
+
+    @app.post("/api/settings/password")
+    async def change_password(body: PasswordChangeRequest,
+                              email: str = Depends(auth.require_owner)):
+        if not auth.verify_password(body.current_password,
+                                    state.settings.local_password_hash):
+            raise HTTPException(403, "current password is incorrect")
+        new_hash = auth.hash_password(body.new_password)
+        stored = await state.storage.get(SETTINGS_COLLECTION, SECURE_KEY) or {}
+        stored["local_password_hash"] = new_hash
+        await state.storage.put(SETTINGS_COLLECTION, SECURE_KEY, stored)
+        state.settings.local_password_hash = new_hash
+        return {"ok": True}
