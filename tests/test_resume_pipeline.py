@@ -79,7 +79,7 @@ def _job(**kwargs):
 def _selection_content(bullets=None):
     bullets = bullets if bullets is not None else [
         {"fact_id": "cut-latency", "text": None},
-        {"fact_id": "led-migration", "text": "Led billing platform migration"},
+        {"fact_id": "led-migration", "text": "Led the migration to a new billing platform"},
     ]
     return json.dumps({
         "summary": "A concise, grounded summary.",

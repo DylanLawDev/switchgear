@@ -45,6 +45,7 @@ class TailorPipeline:
             "job_key": job_key,
             "job_title": job.get("title"),
             "company": job.get("company"),
+            "wording_changes": selection.pop("wording_changes", []),
             "selection": selection,
             "keyword_report": report,
             "html_file": f"{rid}.html",

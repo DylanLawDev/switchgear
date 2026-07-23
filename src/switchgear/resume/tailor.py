@@ -1,20 +1,25 @@
 import json
 import re
+from difflib import SequenceMatcher
 
 from switchgear.career.bank import CareerBank
 
 _DESCRIPTION_LIMIT = 6000
 _FENCE_RE = re.compile(r"^```(?:json)?\s*(.*?)\s*```$", re.DOTALL)
+# Below this similarity a rewrite is more than a grammar/tense touch-up and
+# the owner's verbatim wording is used instead.
+_REWRITE_SIMILARITY_FLOOR = 0.75
 
 _SYSTEM_PROMPT = (
     "You are tailoring a resume from a career bank of grounded facts.\n"
     "Select and arrange only — never invent new claims, numbers, or technologies.\n"
     "Every bullet you produce must cite a fact_id taken from the fact list given below; "
     "do not use a fact_id that is not in that list.\n"
-    "A bullet's text may lightly rephrase the wording of its source fact, but it must not "
-    "add any new claim, number, or technology beyond what is in the source fact. If you do "
-    "not want to rephrase a fact, omit the text field (or set it to null) and the source "
-    "text will be used verbatim.\n"
+    "A bullet's text must keep the source fact's own wording; you may only correct "
+    "grammar, adjust tense, or tighten slightly. Never restructure, reorder, or reword a "
+    "fact — rewrites that drift from the source wording are discarded and the source text "
+    "is used verbatim. If a fact needs no correction, omit the text field (or set it to "
+    "null) and the source text will be used verbatim.\n"
     "The summary may only draw on the candidate profile and the facts you selected — do not "
     "introduce any other information.\n"
     "Reply with ONLY JSON matching the exact shape shown below. No markdown, no code fences, "
@@ -166,6 +171,26 @@ def validate_selection(selection: dict, bank: CareerBank) -> dict:
                 f"fact_id(s)/type(s): {bad_texts}"
             )
         raise TailorError("; ".join(messages))
+
+    wording_changes: list[dict] = []
+    for section in selection.get("sections", []):
+        for entry in section.get("entries", []):
+            for bullet in entry.get("bullets", []):
+                if not bullet["rephrased"]:
+                    continue
+                source = bullet["source_text"]
+                ratio = SequenceMatcher(None, bullet["text"], source).ratio()
+                accepted = ratio >= _REWRITE_SIMILARITY_FLOOR
+                if not accepted:
+                    bullet["text"] = None
+                    bullet["rephrased"] = False
+                wording_changes.append({
+                    "fact_id": bullet["fact_id"],
+                    "original": source,
+                    "final": bullet["text"] if accepted else source,
+                    "accepted": accepted,
+                })
+    selection["wording_changes"] = wording_changes
 
     for section in selection.get("sections", []):
         for entry in section.get("entries", []):

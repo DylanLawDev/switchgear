@@ -271,7 +271,8 @@ def test_validate_selection_whitespace_only_difference_is_not_rephrased(tmp_path
 def test_validate_selection_rephrased_bullet(tmp_path):
     bank = _bank(tmp_path)
     selection = _selection(
-        [{"fact_id": "cut-latency", "text": "Reduced p99 checkout latency by 40%"}]
+        [{"fact_id": "cut-latency",
+          "text": "Cut the checkout p99 latency by 40% by rewriting the cart service"}]
     )
     result = validate_selection(selection, bank)
     bullet = result["sections"][0]["entries"][0]["bullets"][0]
@@ -461,7 +462,7 @@ async def test_tailor_selection_happy_path_uses_writing_tier(tmp_path):
                                 {"fact_id": "cut-latency", "text": None},
                                 {
                                     "fact_id": "led-migration",
-                                    "text": "Led billing platform migration",
+                                    "text": "Led the migration to a new billing platform",
                                 },
                             ],
                         }
@@ -569,3 +570,40 @@ async def test_tailor_selection_non_json_raises(tmp_path):
 
     with pytest.raises(TailorError):
         await tailor_selection(gateway, _job(), bank)
+
+
+def test_grammar_level_rephrase_accepted_and_recorded(tmp_path):
+    bank = _bank(tmp_path)
+    edited = "Cut checkout p99 latency by 40% by rewriting the cart service"
+    selection = _selection([{"fact_id": "cut-latency", "text": edited}])
+    result = validate_selection(selection, bank)
+    bullet = result["sections"][0]["entries"][0]["bullets"][0]
+    assert bullet["rephrased"] is True
+    assert bullet["text"] == edited
+    assert result["wording_changes"] == [{
+        "fact_id": "cut-latency",
+        "original": bank.facts["cut-latency"]["text"],
+        "final": edited,
+        "accepted": True,
+    }]
+
+
+def test_drifted_rewrite_falls_back_to_verbatim(tmp_path):
+    bank = _bank(tmp_path)
+    drift = "Delivered massive performance improvements across the stack"
+    selection = _selection([{"fact_id": "cut-latency", "text": drift}])
+    result = validate_selection(selection, bank)
+    bullet = result["sections"][0]["entries"][0]["bullets"][0]
+    assert bullet["rephrased"] is False
+    assert bullet["text"] is None
+    change = result["wording_changes"][0]
+    assert change["accepted"] is False
+    assert change["final"] == bank.facts["cut-latency"]["text"]
+    assert change["original"] == bank.facts["cut-latency"]["text"]
+
+
+def test_verbatim_bullets_produce_no_wording_changes(tmp_path):
+    bank = _bank(tmp_path)
+    selection = _selection([{"fact_id": "cut-latency", "text": None}])
+    result = validate_selection(selection, bank)
+    assert result["wording_changes"] == []
