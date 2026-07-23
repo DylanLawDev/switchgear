@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import MarkdownView from "../../components/MarkdownView";
+import PlanChecklist, { parsePlanResult } from "./PlanChecklist";
 import ToolCallDetails from "./ToolCallDetails";
 import styles from "../ChatPage.module.css";
 
@@ -31,6 +32,8 @@ export default function MessageList(props: { items: TranscriptItem[]; streaming:
           >
             {item.role === "assistant" ? <MarkdownView source={item.content} /> : item.content}
           </div>
+        ) : item.name === "plan" && parsePlanResult(item.result) ? (
+          <PlanChecklist key={item.id} plan={parsePlanResult(item.result)!} />
         ) : (
           <ToolCallDetails key={item.id} name={item.name} args={item.args} result={item.result} />
         ),
