@@ -1,6 +1,7 @@
 from typing import Literal
 from zoneinfo import ZoneInfo
 
+import httpx
 from fastapi import Depends
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -97,6 +98,13 @@ class UserSettingsUpdate(UserSettings):
     smtp_password: str = Field(default="", max_length=500)
 
 
+class GatewayTestRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    gateway_base_url: str = ""
+    gateway_api_key: str = ""
+
+
 def register_settings_routes(app, state) -> None:
     @app.get("/settings")
     async def settings_page(email: str = Depends(auth.require_owner)):
@@ -126,3 +134,24 @@ def register_settings_routes(app, state) -> None:
             for name, value in updates.items():
                 setattr(state.settings, name, value)
         return {**values, "owner_email": email, **secret_presence(state.settings)}
+
+    @app.post("/api/settings/test-gateway")
+    async def test_gateway(body: GatewayTestRequest,
+                           email: str = Depends(auth.require_owner)):
+        base = (body.gateway_base_url or state.settings.gateway_base_url).rstrip("/")
+        key = body.gateway_api_key or state.settings.gateway_api_key
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                resp = await client.get(f"{base}/models",
+                                        headers={"Authorization": f"Bearer {key}"})
+        except httpx.HTTPError as exc:
+            return {"ok": False, "detail": f"connection failed: {type(exc).__name__}"}
+        if resp.status_code >= 400:
+            return {"ok": False, "detail": f"gateway returned {resp.status_code}"}
+        try:
+            data = resp.json()
+            models = data.get("data", []) if isinstance(data, dict) else data
+            count = len(models) if isinstance(models, list) else 0
+        except ValueError:
+            count = 0
+        return {"ok": True, "models": count}

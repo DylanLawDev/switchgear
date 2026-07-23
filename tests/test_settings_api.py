@@ -179,3 +179,56 @@ async def test_secure_overrides_loaded_from_storage():
     assert state.settings.smtp_password == "env-value"  # empty DB value skipped
     assert state.settings.local_password_hash == "scrypt:x"
     assert state.settings.owner_email == "db@x.y"
+
+
+import respx
+
+
+@respx.mock
+async def test_gateway_test_success_counts_models():
+    respx.get("https://gw.test/v1/models").respond(
+        json={"data": [{"id": "a"}, {"id": "b"}]})
+    app = make_app()
+    async with client(app) as c:
+        response = await c.post("/api/settings/test-gateway",
+                                json={"gateway_base_url": "https://gw.test/v1",
+                                      "gateway_api_key": "sk-x"})
+    assert response.status_code == 200
+    assert response.json() == {"ok": True, "models": 2}
+    assert respx.calls.last.request.headers["authorization"] == "Bearer sk-x"
+
+
+@respx.mock
+async def test_gateway_test_reports_auth_failure():
+    respx.get("https://gw.test/v1/models").respond(status_code=401)
+    app = make_app()
+    async with client(app) as c:
+        response = await c.post("/api/settings/test-gateway",
+                                json={"gateway_base_url": "https://gw.test/v1",
+                                      "gateway_api_key": "bad"})
+    assert response.json() == {"ok": False, "detail": "gateway returned 401"}
+
+
+@respx.mock
+async def test_gateway_test_falls_back_to_effective_settings():
+    respx.get("https://fallback.test/v1/models").respond(json={"data": []})
+    app = make_app()
+    app.state.switchgear.settings.gateway_base_url = "https://fallback.test/v1"
+    app.state.switchgear.settings.gateway_api_key = "sk-saved"
+    async with client(app) as c:
+        response = await c.post("/api/settings/test-gateway", json={})
+    assert response.json()["ok"] is True
+    assert respx.calls.last.request.headers["authorization"] == "Bearer sk-saved"
+
+
+@respx.mock
+async def test_gateway_test_reports_connection_error():
+    import httpx as _httpx
+    respx.get("https://down.test/v1/models").mock(
+        side_effect=_httpx.ConnectError("boom"))
+    app = make_app()
+    async with client(app) as c:
+        response = await c.post("/api/settings/test-gateway",
+                                json={"gateway_base_url": "https://down.test/v1",
+                                      "gateway_api_key": "k"})
+    assert response.json() == {"ok": False, "detail": "connection failed: ConnectError"}
