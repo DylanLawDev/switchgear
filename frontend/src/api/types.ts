@@ -177,6 +177,16 @@ export interface ReferenceSuggestion {
 // ---- user settings (settings_routes.py) ----
 export interface UserSettings {
   owner_email: string;
+  gateway_base_url: string;
+  owner_timezone: string;
+  email_backend: "console" | "smtp";
+  smtp_host: string;
+  smtp_port: number;
+  smtp_username: string;
+  smtp_from: string;
+  smtp_starttls: boolean;
+  gateway_api_key_set: boolean;
+  smtp_password_set: boolean;
   model_chat: string;
   model_bulk: string;
   model_writing: string;
@@ -194,4 +204,28 @@ export interface UserSettings {
   channel_body_max_chars: number;
   channel_backfill_max: number;
   channel_reply_rate_per_day: number;
+}
+
+export type UserSettingsUpdate =
+  Omit<UserSettings, "owner_email" | "gateway_api_key_set" | "smtp_password_set"> & {
+    gateway_api_key?: string;
+    smtp_password?: string;
+  };
+
+// ---- first-run setup (setup_routes.py) ----
+export interface SetupStatus {
+  claimed: boolean;
+}
+
+export interface GatewayTestResult {
+  ok: boolean;
+  models?: number;
+  detail?: string;
+}
+
+export interface ClaimRequest {
+  token: string;
+  password: string;
+  owner_email: string;
+  owner_timezone?: string;
 }
