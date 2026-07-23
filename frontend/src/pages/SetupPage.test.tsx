@@ -106,3 +106,48 @@ test("gateway step tests connection and finishes", async () => {
   await user.click(screen.getByRole("button", { name: /save and finish/i }));
   await screen.findByText(/you're all set/i);
 });
+
+test("gateway step offers budget model dropdown and saves the pick", async () => {
+  mockUnclaimed();
+  let saved: Record<string, unknown> | undefined;
+  server.use(
+    http.post("/api/setup/claim", () => HttpResponse.json({ ok: true })),
+    http.get("/api/settings", () => HttpResponse.json(settings)),
+    http.put("/api/settings", async ({ request }) => {
+      saved = (await request.json()) as Record<string, unknown>;
+      return HttpResponse.json({ ...settings, ...saved });
+    }),
+  );
+  renderWithProviders(<SetupPage />, { route: "/setup?token=t" });
+  const user = userEvent.setup();
+  await screen.findByText(/claim this instance/i);
+  await user.type(screen.getByLabelText("Nickname"), "dyl");
+  await user.type(screen.getByLabelText("Password"), "hunter22-long");
+  await user.type(screen.getByLabelText("Confirm password"), "hunter22-long");
+  await user.click(screen.getByRole("button", { name: /claim/i }));
+
+  const modelSelect = await screen.findByLabelText("Chat model");
+  await user.selectOptions(modelSelect, "deepseek/deepseek-v4-flash");
+  await user.click(screen.getByRole("button", { name: /save and finish/i }));
+  await screen.findByText(/you're all set/i);
+  expect(saved?.model_chat).toBe("deepseek/deepseek-v4-flash");
+});
+
+test("custom model option reveals a free-text input", async () => {
+  mockUnclaimed();
+  server.use(
+    http.post("/api/setup/claim", () => HttpResponse.json({ ok: true })),
+    http.get("/api/settings", () => HttpResponse.json(settings)),
+  );
+  renderWithProviders(<SetupPage />, { route: "/setup?token=t" });
+  const user = userEvent.setup();
+  await screen.findByText(/claim this instance/i);
+  await user.type(screen.getByLabelText("Nickname"), "dyl");
+  await user.type(screen.getByLabelText("Password"), "hunter22-long");
+  await user.type(screen.getByLabelText("Confirm password"), "hunter22-long");
+  await user.click(screen.getByRole("button", { name: /claim/i }));
+
+  const modelSelect = await screen.findByLabelText("Chat model");
+  await user.selectOptions(modelSelect, "__custom__");
+  expect(screen.getByLabelText("Custom model")).toBeInTheDocument();
+});

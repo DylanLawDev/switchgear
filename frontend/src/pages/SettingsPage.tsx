@@ -8,6 +8,7 @@ import {
   useUserSettings,
 } from "../api/queries/settings";
 import { UserSettings } from "../api/types";
+import { MODEL_SUGGESTIONS } from "../lib/models";
 import styles from "./SettingsPage.module.css";
 
 type EditableSettings =
@@ -20,15 +21,16 @@ interface FieldSpec {
   help: string;
   type?: "text" | "number";
   step?: string;
+  list?: string;
 }
 
 const GROUPS: { title: string; fields: FieldSpec[] }[] = [
   {
     title: "models",
     fields: [
-      { key: "model_chat", label: "Chat model", help: "Interactive conversations and tool use." },
-      { key: "model_bulk", label: "Bulk model", help: "Background scoring and high-volume tasks." },
-      { key: "model_writing", label: "Writing model", help: "Briefs, drafts, and polished content." },
+      { key: "model_chat", label: "Chat model", help: "Interactive conversations and tool use.", list: "model-suggestions" },
+      { key: "model_bulk", label: "Bulk model", help: "Background scoring and high-volume tasks.", list: "model-suggestions" },
+      { key: "model_writing", label: "Writing model", help: "Briefs, drafts, and polished content.", list: "model-suggestions" },
     ],
   },
   {
@@ -156,6 +158,7 @@ export default function SettingsPage() {
                     aria-label={field.label}
                     type={field.type ?? "text"}
                     step={field.step}
+                    list={field.list}
                     value={String(draft[field.key])}
                     onChange={(event) => updateField(field, event.target.value)}
                   />
@@ -164,6 +167,9 @@ export default function SettingsPage() {
             </div>
           </section>
         ))}
+        <datalist id="model-suggestions">
+          {MODEL_SUGGESTIONS.map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+        </datalist>
         <section className={styles.section}>
           <h2>email</h2>
           <div className={styles.grid}>
